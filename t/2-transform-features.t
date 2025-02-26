@@ -1,8 +1,8 @@
 use Test;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
-$Number::More::LENGTH-HANDLING = 'waRn';
+$Number::LENGTH-HANDLING = 'waRn';
 
 my $prefix = True;
 my $LC     = True;
@@ -16,14 +16,20 @@ dies-ok { hex2dec('ff', 2, :$prefix), '255'; }, $msg1;
 dies-ok { bin2dec('11', :$prefix), 3; }, $msg1;
 dies-ok { rebase('Z', 2, 3), 2; }, "invalid base number for input";
 dies-ok { rebase('Z', 16, 37), 2; }, "invalid base number for input";
+
 lives-ok { rebase('Z', 36, 3), 2; }, "valid base number for input";
-lives-ok { rebase('Z', 37, 3), 2; }, "valid base number for input";
+
+ lives-ok { rebase('Z', 37, 3), 2; }, "valid base number for input";
 
 # various features
 is hex2dec('ff', 5), '00255';
-is hex2dec('ff', 2), '255';
+
+ is hex2dec('ff', 2), '255';
+
 is bin2dec('11', 4), '0003';
+
 is bin2hex('00001010', :$prefix), '0xA';
+
 is bin2hex('00001010', :$LC), 'a';
 is bin2hex('00001010', :$LC, :$prefix), '0xa';
 is bin2hex('11', 4), '0003';
@@ -49,4 +55,3 @@ is rebase('Z', 36, 3, :$suffix), '1022_base-3', "test suffix";
 is rebase('z', 62, 3, :$suffix), '2021_base-3', "test suffix";
 
 done-testing;
-

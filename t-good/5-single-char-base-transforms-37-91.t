@@ -1,6 +1,6 @@
 use Test;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 # error conditions
 #dies-ok { rebase('Z', 40, 3), 2; }, "incorrect base number for input";

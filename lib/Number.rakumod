@@ -1,9 +1,9 @@
-unit module Number::Rebase;
+unit class Number;
 
 # export a debug var for users
 our $DEBUG is export(:DEBUG) = False;
 BEGIN {
-    if %*ENV<NUMBER_REBASE_DEBUG> {
+    if %*ENV<NUMBER_DEBUG> {
 	$DEBUG = True;
     }
     else {
@@ -137,8 +137,8 @@ our token base88 is export(:token-base88)           { ^ <[A..Za..z\d ! # $ % & (
 our token base89 is export(:token-base89)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ]>+ $ }  # case-sensitive, multiple chars
 our token base90 is export(:token-base90)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ~ ]>+ $ }  # case-sensitive, multiple chars
 
-# note base91 cannot have the period as a radix point (but we might could handle it
-# with a unicode char of some kind)
+# Note base91 cannot have the period as a radix point but we handle it
+# with a unicode character above the ASCII range.
 our token base91 is export(:token-base91)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ~ .]>+ $ }  # case-sensitive, multiple chars
 
 #| The original extended character set (29 more chars) after base62 to base91
@@ -158,7 +158,7 @@ our token base91 is export(:token-base91)           { ^ <[A..Za..z\d ! # $ % & (
 #| Then,
 #| for bases 2 through 90 the radix point is the period. For base 91
 #| we provide a separate routine to return the integer and
-#| fractional parts separately.
+#| fractional parts.
 
 our @base is export(:base) = [
 # bases 2-36: use Raku routines
@@ -211,6 +211,127 @@ our %digit2dec is export(:digit2dec) = %(
 );
 
 our token base { ^ 2|8|10|16 $ }
+
+#=============================
+# class Number definition
+#=============================
+#class NumObj is export {
+
+# as originally input:
+has      $.number is required; # may have a radix point
+has      $.base   is required; # 1 < base < 92
+
+# the decimal number resulting from the input
+has     $.sign;         # +1 or -1
+has     $.integer;      # may be negative
+has     $.fraction = 0; # fractional part
+
+submethod TWEAK {
+    if $!number < 0 {
+        $!sign     = -1;
+        $!integer *= -1;
+    }
+    else {
+        $!sign     = +1;
+    }
+    unless 1 < $!base < 92 {
+        die "FATAL: 'base' must be > 1 and < 92, input was '$!base'";
+    }
+    ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
+}
+
+# Methods
+#
+# Following the referenced paper, express the integral and fractional
+# parts as sum of each digit as a power:
+#
+#   digit * $base^digit-place
+#
+# where digit-place is (Npositive-digit - 1)..0 . -1..-(Nnegative-digit)
+
+method to-base($number, Numeric :$base --> List) {
+    # Use Raku directly if base is < 37
+    my ($integer, $fraction) = $number.split: '.';
+
+    if $fraction and $base > 36 {
+        die "FATAL: Unable to handle real numbers with base > 36":
+    }
+
+    my $res = $number.parse-base: $base;
+    my ($int, $dec) = 0, 0;
+    if $fraction {
+        ($int, $dec) = $res.split: '.';
+        $dec = '0.' ~ $dec;
+    }
+    else {
+        $int = $res;
+        $dec = 0;
+    }
+
+    =begin comment
+    my @D  = $integer.comb;
+    my @np = (0..^@D.elems).reverse;
+    my @d  = $fraction ?? $fraction.comb !! [];
+    my @nn = 1..@d.elems;
+    for @D.kv -> $i, $d {
+        my $exp = @np[$i];
+        my $v = $d * exp($exp, $base);
+        $int += $v;
+    }
+    for @d.kv -> $i, $d  {
+        my $exp = -1 * @nn[$i];
+        my $v = $d * exp($exp, $base);
+        $dec += $v;
+    }
+    =end comment
+
+    $int, $dec;
+}
+
+multi method multiply-by(
+    $num,
+    :$base!
+    ) {
+}
+multi method multiply-by(
+    Number $o,
+    ) {
+}
+
+multi method divide-by(
+    $num,
+    :$base!
+    ) {
+}
+multi method divide-by(
+    Number $o
+    ) {
+}
+
+multi method add(
+    $num,
+    :$base!
+    ) {
+}
+multi method add(
+    Number $o
+    ) {
+}
+
+multi method subtract(
+    $num,
+    :$base!
+    ) {
+}
+multi method subtract(
+    Number $o
+    ) {
+}
+
+#===============================
+# end of class Number definition
+#===============================
+
 
 # this is an internal sub
 sub pad-number(
@@ -805,122 +926,7 @@ sub _from-dec-to-b37-b91(
 } # _from-dec-to-b37-b91
 
 
-class NumObj is export {
-
-    # as originally input:
-    has      $.number is required; # may have a radix point
-    has      $.base   is required; # 1 < base < 92
-
-    # the decimal number resulting from the input
-    has     $.sign;         # +1 or -1
-    has     $.integer;      # may be negative
-    has     $.fraction = 0; # fractional part
-
-    submethod TWEAK {
-        if $!number < 0 {
-            $!sign     = -1;
-            $!integer *= -1;
-        }
-        else {
-            $!sign     = +1;
-        }
-        unless 1 < $!base < 92 {
-            die "FATAL: 'base' must be > 1 and < 92, input was '$!base'";
-        }
-        ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
-    }
-
-    # Methods
-    #
-    # Following the referenced paper, express the integral and fractional
-    # parts as sum of each digit as a power:
-    #
-    #   digit * $base^digit-place
-    # 
-    # where digit-place is (Npositive-digit - 1)..0 . -1..-(Nnegative-digit)
-
-    method to-base($number, Numeric :$base --> List) {
-        # Use Raku directly if base is < 37
-        my ($integer, $fraction) = $number.split: '.';
-
-        if $fraction and $base > 36 {
-            die "FATAL: Unable to handle real numbers with base > 36":
-        }
-
-        my $res = $number.parse-base: $base;
-        my ($int, $dec) = 0, 0;
-        if $fraction {
-            ($int, $dec) = $res.split: '.';
-            $dec = '0.' ~ $dec;
-        }
-        else {
-            $int = $res;
-            $dec = 0;
-        }
-
-        =begin comment
-        my @D  = $integer.comb;
-        my @np = (0..^@D.elems).reverse; 
-        my @d  = $fraction ?? $fraction.comb !! [];
-        my @nn = 1..@d.elems;
-        for @D.kv -> $i, $d {
-            my $exp = @np[$i];
-            my $v = $d * exp($exp, $base);
-            $int += $v;
-        }
-        for @d.kv -> $i, $d  {
-            my $exp = -1 * @nn[$i];
-            my $v = $d * exp($exp, $base);
-            $dec += $v;
-        }
-        =end comment
-
-        $int, $dec;
-    }
-
-    multi method multiply-by(
-        $num, 
-        :$base!
-        ) {
-    }
-    multi method multiply-by(
-        NumObj $o, 
-        ) {
-    }
-
-    multi method divide-by(
-        $numi,
-        :$base!
-        ) {
-    }
-    multi method divide-by(
-        NumObj $o
-        ) {
-    }
-
-    multi method add(
-        $num,
-        :$base!
-        ) {
-    }
-    multi method add(
-        NumObj $o
-        ) {
-    }
-
-    multi method subtract(
-        $num,
-        :$base!
-        ) {
-    }
-    multi method subtract(
-        NumObj $o
-        ) {
-    }
-
-} # class NumRebase
-
-# exportable subs
+# exported subs
 
 multi parts(
     $n,

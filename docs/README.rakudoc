@@ -2,18 +2,24 @@
 
 =head1 NAME
 
-B<Number::Rebase> provides routines to manipulate numbers of differing bases
+B<Number> provides a class and routines to manipulate numbers of differing bases
 from 2 to 91
 
 =head1 SYNOPSIS
 
 =begin code :lang<raku>
-use Number::Rebase;
+use Number;
 =end code
 
 =head1 DESCRIPTION
 
-This module provides some convenience functions to convert unsigned
+The Number class allows conversion between numbers of differing
+bases and common mathematical operations on them. Real number
+operations on bases 2 through 36 are provided using Raku core
+routines. CAUTION: Real number handling on bases 37 to 91 is more
+limited and should be treated as experimental.
+
+Also provided are some convenience functions to convert unsigned
 integers between different, commonly used number bases: decimal,
 hexadecimal, octal, and binary.
 
@@ -67,11 +73,29 @@ hexadecimal results and all bases greater than 10 and less than 37.
 Bases greater than 36 use a mixture of upper-case and lower-case
 characters.
 
+One can add optional named parameters to provide output formatting
+features suitable for incuding the values in text:
+
+=begin item
+=end item
+
+
 There is an optional parameter to define desired lengths of results
 (which will result in adding leading zeroes if needed).  There are
-named parameters to have results in lower-case (C<:$LC>) for bases
+named parameters to have results in suitable form including in text:
+lower-case (C<:$LC>) for bases
 between 11 and 36 and add appropriate prefixes to transformed numbers
-(C<:$prefix>) in bases 2 (binary), 8 (octal), and 16 (hecadecimal).
+(C<:$prefix>) in bases 2 (binary), 8 (octal), 10 (decimal), 
+and 16 (hecadecimal). Examples of each:
+
+=begin code
+0b11001      # binary
+0o11001      # octal
+0d11001      # decimal
+0x11001      # hexadecimal
+
+=end code
+
 Note that requested prefixes will take up two characters in a
 requested length.  There is also an option (C<:$suffix>) to add the
 appropriate base suffix to any number, the result of which will look

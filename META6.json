@@ -11,14 +11,14 @@
   ],
   "description": "Provides number base transform functions",
   "license": "Artistic-2.0",
-  "name": "Number::Rebase",
+  "name": "Number",
   "perl": "6.*",
   "provides": {
-    "Number::Rebase": "lib/Number/Rebase.rakumod"
+    "Number": "lib/Number.rakumod"
   },
   "resources": [
   ],
-  "source-url": "https://github.com/tbrowder/Number-Rebase.git",
+  "source-url": "https://github.com/tbrowder/Number.git",
   "support": {
     "bugtracker": "https://github.com/tbrowder/Number-Rebase-Raku/issues"
   },

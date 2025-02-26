@@ -1,10 +1,10 @@
 use Test;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 my $debug = 0;
 
-my $LC = True;
+my $LC = True; # lower case
 
 # a random set of decimal inputs
 my $nrands = 10; # num loops

@@ -2,7 +2,7 @@ use Test;
 
 use UUID::V4;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 my $hex = "ffffffffffffffffffffffffffffffff";
 is $hex.chars, 32;

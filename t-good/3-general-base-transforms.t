@@ -1,6 +1,6 @@
 use Test;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 my $prefix = True;
 my $LC     = True;

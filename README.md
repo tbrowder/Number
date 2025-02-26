@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/tbrowder/Number-Rebase/actions/workflows/linux.yml/badge.svg)](https://github.com/tbrowder/Number-Rebase/actions) [![Actions Status](https://github.com/tbrowder/Number-Rebase/actions/workflows/macos.yml/badge.svg)](https://github.com/tbrowder/Number-Rebase/actions) [![Actions Status](https://github.com/tbrowder/Number-Rebase/actions/workflows/windows.yml/badge.svg)](https://github.com/tbrowder/Number-Rebase/actions)
+[![Actions Status](https://github.com/tbrowder/Number/actions/workflows/linux.yml/badge.svg)](https://github.com/tbrowder/Number/actions) [![Actions Status](https://github.com/tbrowder/Number/actions/workflows/macos.yml/badge.svg)](https://github.com/tbrowder/Number/actions) [![Actions Status](https://github.com/tbrowder/Number/actions/workflows/windows.yml/badge.svg)](https://github.com/tbrowder/Number/actions)
 
 NAME
 ====

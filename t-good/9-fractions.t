@@ -1,12 +1,13 @@
 use Test;
 
 use UUID::V4;
-use Number::Rebase :ALL;
+
+use Number :ALL;
 
 my $debug = 0;
 
 # test clases and fractions
-# decimal, octal, and hexadecimal
+# binary, octal, decimal, and hexadecimal
 
 my ($o, $base, $number);
 
@@ -18,8 +19,8 @@ my @dnums = <42 42.1>;
 my @hnums = <42 42.1 e2 e2.a>;
 
 for @dnums -> $number {
-    $o = Number::Rebase::NumObj.new: :$number, :base(10);
-    isa-ok $o, Number::Rebase::NumObj;
+    $o = Number::NumObj.new: :$number, :base(10);
+    isa-ok $o, Number::NumObj;
     if $number == 42 {
         is $o.integer.Int, 42, "integer: 42";
         is $o.fraction, 0, "fraction: 0";

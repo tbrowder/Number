@@ -1,6 +1,6 @@
 use Test;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 # testing single chars only
 my $prefix = True;

@@ -1,7 +1,8 @@
 use Test;
 
 use UUID::V4;
-use Number::Rebase :ALL;
+
+use Number :ALL;
 
 my $debug = 0;
 

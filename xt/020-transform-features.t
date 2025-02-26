@@ -2,7 +2,7 @@ use Test;
 
 # tests from the original Number::More
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 $Number::More::LENGHT-HANDLING = 'waRn';
 
