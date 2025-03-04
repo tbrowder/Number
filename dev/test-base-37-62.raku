@@ -2,7 +2,7 @@
 
 use lib <../lib>;
 
-use Number::Rebase :ALL;
+use Number :ALL;
 
 {
 my $n = '12345';

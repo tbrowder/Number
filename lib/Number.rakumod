@@ -1,109 +1,39 @@
 unit class Number;
 
-# export a debug var for users
-our $DEBUG is export(:DEBUG) = False;
-BEGIN {
-    if %*ENV<NUMBER_DEBUG> {
-	$DEBUG = True;
-    }
-    else {
-	$DEBUG = False;
-    }
-}
-$DEBUG = 0;
+my $DEBUG = 0;
 
 # Export a var for users to set length behavior
 our $LENGTH-HANDLING is export(:DEBUG) = 'ignore'; # other options: 'warn', 'fail'
 our token length-action { ^ :i warn|fail $ }
 
+our $bset = "01".comb.Set;
+our $oset = (0..7).Set;
+our $dset = (0..9).Set;
+our $hset = "abcdef".comb.Set (|) $dset;
+
 # Define tokens for common regexes (no prefixes are allowed)
 our token binary is export(:token-binary)           { ^ <[01]>+ $ }
 our token octal is export(:token-octal)             { ^ <[0..7]>+ $ }
 our token decimal is export(:token-decimal)         { ^ \d+ $ }       # actually an int
-
-# Note default Raku hex input handling is mixed case and upper-case for output.
-# This module handles either input but hex input MUST be either all upper or all lower
-# case to preserve output.
 our token hexadecimal is export(:token-hecadecimal) { :i ^ <[a..f\d]>+ $ }   # multiple chars
 
+# Note default Raku hex input handling is mixed case and upper-case
+# for output.  This module handles either input but hex input MUST be
+# either all upper or all lower case to preserve output.
+
 # For general base specification functions 2..91
-our token all-bases is export(:token-all-bases)     { ^ <[2..9]> | <[1..8]><[0..9]> | 9 <[01]>   $ }
+our token all-bases is export(:token-all-bases)  { ^
+                                                   <[2..9]> |
+                                                   <[1..8]><[0..9]> |
+                                                   9 <[01]>
+                                                 $ }
 
-# base 2 is binary
-our token base2 is export(:token-base2)             { ^ <[01]>+ $ }
-our token base3 is export(:token-base3)             { ^ <[012]>+ $ }
-our token base4 is export(:token-base4)             { ^ <[0..3]>+ $ }
-our token base5 is export(:token-base5)             { ^ <[0..4]>+ $ }
-our token base6 is export(:token-base6)             { ^ <[0..5]>+ $ }
-our token base7 is export(:token-base7)             { ^ <[0..6]>+ $ }
+our $base63 is export(:base63) = 
+            ( 0..9, "A".."Z", "a".."z", '!' ).join; # case-sensitive
+our $base64 is export(:base64) = 
+            ( 0..9, "A".."Z", "a".."z", '!'..'#' ).join; # case-sensitive
 
-# base 8 is octal
-our token base8 is export(:token-base8)             { ^ <[0..7]>+ $ }
-our token base9 is export(:token-base9)             { ^ <[0..8]>+ $ }
-
-# base 10 is decimal
-our token base10 is export(:token-base10)           { ^ \d+ $ }              # actually an int
-our token base11 is export(:token-base11)           { :i ^ <[a\d]>+ $ }      # multiple chars
-our token base12 is export(:token-base12)           { :i ^ <[ab\d]>+ $ }     # multiple chars
-our token base13 is export(:token-base13)           { :i ^ <[abc\d]>+ $ }    # multiple chars
-our token base14 is export(:token-base14)           { :i ^ <[a..d\d]>+ $ }   # multiple chars
-our token base15 is export(:token-base15)           { :i ^ <[a..e\d]>+ $ }   # multiple chars
-
-# base 16 is hexadecimal
-our token base16 is export(:token-base16)           { :i ^ <[a..f\d]>+ $ }   # multiple chars
-our token base17 is export(:token-base17)           { :i ^ <[a..g\d]>+ $ }   # multiple chars
-our token base18 is export(:token-base18)           { :i ^ <[a..h\d]>+ $ }   # multiple chars
-our token base19 is export(:token-base19)           { :i ^ <[a..i\d]>+ $ }   # multiple chars
-our token base20 is export(:token-base20)           { :i ^ <[a..j\d]>+ $ }   # multiple chars
-our token base21 is export(:token-base21)           { :i ^ <[a..k\d]>+ $ }   # multiple chars
-our token base22 is export(:token-base22)           { :i ^ <[a..l\d]>+ $ }   # multiple chars
-our token base23 is export(:token-base23)           { :i ^ <[a..m\d]>+ $ }   # multiple chars
-our token base24 is export(:token-base24)           { :i ^ <[a..n\d]>+ $ }   # multiple chars
-our token base25 is export(:token-base25)           { :i ^ <[a..o\d]>+ $ }   # multiple chars
-our token base26 is export(:token-base26)           { :i ^ <[a..p\d]>+ $ }   # multiple chars
-our token base27 is export(:token-base27)           { :i ^ <[a..q\d]>+ $ }   # multiple chars
-our token base28 is export(:token-base28)           { :i ^ <[a..r\d]>+ $ }   # multiple chars
-our token base29 is export(:token-base29)           { :i ^ <[a..s\d]>+ $ }   # multiple chars
-
-our token base30 is export(:token-base30)           { :i ^ <[a..t\d]>+ $ }   # multiple chars
-our token base31 is export(:token-base31)           { :i ^ <[a..u\d]>+ $ }   # multiple chars
-our token base32 is export(:token-base32)           { :i ^ <[a..v\d]>+ $ }   # multiple chars
-our token base33 is export(:token-base33)           { :i ^ <[a..w\d]>+ $ }   # multiple chars
-our token base34 is export(:token-base34)           { :i ^ <[a..x\d]>+ $ }   # multiple chars
-our token base35 is export(:token-base35)           { :i ^ <[a..y\d]>+ $ }   # multiple chars
-our token base36 is export(:token-base36)           { :i ^ <[a..z\d]>+ $ }   # multiple chars
-
-# char sets for higher bases (> 36) are case sensitive
-our token base37 is export(:token-base37)           { ^ <[A..Za\d]>+ $ }     # case-sensitive, multiple chars
-our token base38 is export(:token-base38)           { ^ <[A..Zab\d]>+ $ }    # case-sensitive, multiple chars
-our token base39 is export(:token-base39)           { ^ <[A..Zabc\d]>+ $ }   # case-sensitive, multiple chars
-
-our token base40 is export(:token-base40)           { ^ <[A..Za..d\d]>+ $ }  # case-sensitive, multiple chars
-our token base41 is export(:token-base41)           { ^ <[A..Za..e\d]>+ $ }  # case-sensitive, multiple chars
-our token base42 is export(:token-base42)           { ^ <[A..Za..f\d]>+ $ }  # case-sensitive, multiple chars
-our token base43 is export(:token-base43)           { ^ <[A..Za..g\d]>+ $ }  # case-sensitive, multiple chars
-our token base44 is export(:token-base44)           { ^ <[A..Za..h\d]>+ $ }  # case-sensitive, multiple chars
-our token base45 is export(:token-base45)           { ^ <[A..Za..i\d]>+ $ }  # case-sensitive, multiple chars
-our token base46 is export(:token-base46)           { ^ <[A..Za..j\d]>+ $ }  # case-sensitive, multiple chars
-our token base47 is export(:token-base47)           { ^ <[A..Za..k\d]>+ $ }  # case-sensitive, multiple chars
-our token base48 is export(:token-base48)           { ^ <[A..Za..l\d]>+ $ }  # case-sensitive, multiple chars
-our token base49 is export(:token-base49)           { ^ <[A..Za..m\d]>+ $ }  # case-sensitive, multiple chars
-
-our token base50 is export(:token-base50)           { ^ <[A..Za..n\d]>+ $ }  # case-sensitive, multiple chars
-our token base51 is export(:token-base51)           { ^ <[A..Za..o\d]>+ $ }  # case-sensitive, multiple chars
-our token base52 is export(:token-base52)           { ^ <[A..Za..p\d]>+ $ }  # case-sensitive, multiple chars
-our token base53 is export(:token-base53)           { ^ <[A..Za..q\d]>+ $ }  # case-sensitive, multiple chars
-our token base54 is export(:token-base54)           { ^ <[A..Za..r\d]>+ $ }  # case-sensitive, multiple chars
-our token base55 is export(:token-base55)           { ^ <[A..Za..s\d]>+ $ }  # case-sensitive, multiple chars
-our token base56 is export(:token-base56)           { ^ <[A..Za..t\d]>+ $ }  # case-sensitive, multiple chars
-our token base57 is export(:token-base57)           { ^ <[A..Za..u\d]>+ $ }  # case-sensitive, multiple chars
-our token base58 is export(:token-base58)           { ^ <[A..Za..v\d]>+ $ }  # case-sensitive, multiple chars
-our token base59 is export(:token-base59)           { ^ <[A..Za..w\d]>+ $ }  # case-sensitive, multiple chars
-
-our token base60 is export(:token-base60)           { ^ <[A..Za..x\d]>+ $ }  # case-sensitive, multiple chars
-our token base61 is export(:token-base61)           { ^ <[A..Za..y\d]>+ $ }  # case-sensitive, multiple chars
-our token base62 is export(:token-base62)           { ^ <[A..Za..z\d]>+ $ }  # case-sensitive, multiple chars
-
+=begin comment
 # extended to base 91
 our token base63 is export(:token-base63)           { ^ <[A..Za..z\d ! ]>+ $ }  # case-sensitive, multiple chars
 our token base64 is export(:token-base64)           { ^ <[A..Za..z\d ! # ]>+ $ }  # case-sensitive, multiple chars
@@ -155,10 +85,9 @@ our token base91 is export(:token-base91)           { ^ <[A..Za..z\d ! # $ % & (
 #| 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
 #| ! # $ % & ( ) * + , " / : ; < = > ? @ [ ] ^ _ ` { | } ~ .
 
-#| Then,
-#| for bases 2 through 90 the radix point is the period. For base 91
-#| we provide a separate routine to return the integer and
-#| fractional parts.
+# Then, for bases 2 through 90 the radix point is the period. For base
+# 91 we provide a separate routine to return the integer and fractional
+# parts.
 
 our @base is export(:base) = [
 # bases 2-36: use Raku routines
@@ -179,9 +108,10 @@ our @base is export(:base) = [
 &base81, &base82, &base83, &base84, &base85, &base86, &base87, &base88, &base89, &base90,
 &base91
 ];
+=end comment
 
-#| Standard digit set for bases 2 through 91 (char 0 through 91).
-#| The array of digits is indexed by their decimal value.
+# Standard digit set for bases 2 through 91 (char 0 through 91).
+# The array of digits is indexed by their decimal value.
 our @dec2digit is export(:dec2digit) = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', # 10
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', # 20
@@ -195,8 +125,11 @@ our @dec2digit is export(:dec2digit) = [
     '.',                                              # 91
     ];
 
-#| Standard digit set for bases 2 through 91 (char 0 through 91).
-#| The hash is comprised of digit keys and their decimal value.
+# Standard digit set for bases 2 through 91 (char 0 through 91).
+# The hash is comprised of digit keys and their decimal value.
+our %digit2dec is export(:digit2dec) = @dec2digit.antipairs;
+
+=begin comment
 our %digit2dec is export(:digit2dec) = %(
     '0' =>  0, '1' =>  1, '2' =>  2, '3' =>  3, '4' =>  4, '5' =>  5, '6' =>  6, '7' =>  7, '8' =>  8, '9' =>  9, # 10
     'A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14, 'F' => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, # 20
@@ -209,6 +142,7 @@ our %digit2dec is export(:digit2dec) = %(
     '@' => 80, '[' => 81, ']' => 82, '^' => 83, '_' => 84, '`' => 85, '{' => 86, '|' => 87, '}' => 88, '~' => 89, # 90
     '.' => 90,                                                                                                    # 91
 );
+=end comment
 
 our token base { ^ 2|8|10|16 $ }
 
@@ -332,31 +266,25 @@ multi method subtract(
 # end of class Number definition
 #===============================
 
-
-# this is an internal sub
+# This is an internal sub
 sub pad-number(
     $num is rw,
     UInt $base where &all-bases,
-    UInt $len = 0,
-    Bool :$prefix = False,
-    Bool :$suffix = False,
-    Bool :$LC = False,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
     ) {
+    my UInt $len = $num.chars;
 
-    =begin comment
-    # consistify case handling
-    my $uc = $hex ~~ /^ &hexcaps $/ ?? 'uc'
-                                    !! $hex ~~ /^ &hexlower $/ 'lc' !! 'mc';
-    if $uc eq 'mc' || $uc eq 'uc' {
-        $uc = 'uc';
-    }
-    else {
-        $uc = 'uc';
-    }
-    =end comment
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
 
-    # this also checks for length error, upper-lower casing, and handling
-    if $base > 10 && $base < 37 {
+    # This also checks for length error, upper-lower casing, and handling
+    if 10 < $base < 37 {
         if $LC {
 	    # special feature for case-insensitive bases
             $num .= lc;
@@ -364,9 +292,11 @@ sub pad-number(
     }
 
     my $nc  = $num.chars;
-    my $nct = ($prefix && !$suffix) ?? $nc + 2 !! $nc;
-    if $LENGTH-HANDLING ~~ &length-action && $nct > $len {
-        my $msg = "Desired length ($len) of number '$num' is less than required by it";
+    # num chars with prefix
+    my $nct = ($prefix && !$suffix) ?? ($nc + 2) !! $nc;
+    if ($length and ($LENGTH-HANDLING ~~ (&length-action)) and ($nct > $length)) {
+        my $msg = "Desired length ($length) of number '$num' is\
+                     less than required by it";
         $msg ~= " and its prefix" if $prefix;
         $msg ~= " ($nct).";
 
@@ -381,13 +311,15 @@ sub pad-number(
     if $len > $nct {
         # padding required
         # first pad with zeroes
-        # the following test should always be true!!
-        if $len <= $nc {
-            die "FATAL: unexpected \$len ($len) NOT greater than \$nc ($nc)";
-        }
         # create the zero padding
-        my $zpad = 0 x ($len - $nct);
+        my $zpad = 0 x ($length - $nct);
         $num = $zpad ~ $num;
+
+        # now the following test should always be true!!
+        if $len {
+            die "debug FATAL: unexpected \$length ($length)\
+                NOT greater than \$nc ($nc)";
+        }
     }
 
     if $suffix {
@@ -482,10 +414,12 @@ sub dec2bin($dec where &decimal,
 # Purpose : Convert a binary number (string) to a decimal number.
 # Params  : Binary number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
-sub bin2dec(Str:D $bin where &binary,
-            UInt $len = 0,
-            Bool :$suffix = False,
-            --> Cool) is export(:bin2dec) {
+sub bin2dec(
+    Str:D $bin where &binary,
+    UInt $len = 0,
+    Bool :$suffix = False,
+    --> Cool
+    ) is export(:bin2dec) {
     # need bases of incoming and outgoing numbers
     constant $base-i =  2;
     constant $base-o = 10;
@@ -643,17 +577,24 @@ sub rebase(
     $num-i,
     $base-i where &all-bases,
     $base-o where &all-bases,
-    UInt $len = 0,
-    Bool :$prefix = False,
-    Bool :$suffix = False,
-    Bool :$LC = False,
+    # optional args
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
     :$debug,
     --> Cool
     ) is export(:baseM2baseN) {
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
 
     # make sure incoming number is in the right base
-    if $num-i !~~ @base[$base-i] {
-        die "FATAL: Incoming number ($num-i) in sub 'rebase' is not a member of base '$base-i'.";
+    my $bset = create-base-set $base-i;
+    my $nset = create-set $num-i;
+
+    unless $nset (<=) $bset {
+        die "FATAL: Incoming number '$num-i' in sub 'rebase' is\
+              not a member of base '$base-i'.";
     }
 
     # check for same bases
@@ -739,25 +680,25 @@ sub rebase(
 	}
     }
 
-    # finally, pad the number, make upper-case and add prefix or suffix as
+    # Finally, pad the number, make upper-case and add prefix or suffix as
     # appropriate
     if $base-o == 2 || $base-o == 8 {
-        pad-number $num-o, $base-o, $len, :$prefix, :$suffix;
+        pad-number $num-o, $base-o, :$prefix, :$suffix;
     }
     elsif $base-o == 16 {
-        pad-number $num-o, $base-o, $len, :$prefix, :$suffix, :$LC;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$LC;
     }
     elsif (10 < $base-o < 37) {
 	# case insensitive bases
-        pad-number $num-o, $base-o, $len, :$LC, :$suffix;
+        pad-number $num-o, $base-o, :$LC, :$suffix;
     }
     elsif (1 < $base-o < 11) {
 	# case N/A bases
-        pad-number $num-o, $base-o, $len, :$suffix;
+        pad-number $num-o, $base-o, :$suffix;
     }
     else {
 	# case SENSITIVE bases
-        pad-number $num-o, $base-o, $len, :$suffix;
+        pad-number $num-o, $base-o, :$suffix;
     }
 
     $num-o;
@@ -1032,7 +973,6 @@ sub frac(
 # Extends routine 'parse-base' to base 91 for unsigned integers.
 # Converts a string with a base (radix) of $base to its Numeric
 # (base 10) equivalent.
-
 sub str2num(
     $num is copy,
     UInt $base where 2..91
@@ -1071,8 +1011,8 @@ sub str2num(
     $dec;
 } # str2num
 
-
-# this version looks excellent for the integer part!
+# This version looks excellent for the integer part!
+# was _from-dec-to-b37-b91
 multi sub num2str(
     UInt:D $dec,
     UInt:D $base
@@ -1093,9 +1033,11 @@ multi sub num2str(
 # was _from-dec-to-b37-b91
 # Extends method 'base' to base 91 for unsigned integers.
 # Converts an unsigned integer (base 10) to a string using base $base.
-sub num2str($num, # decimal integer
-            UInt $base where 2..91
-            --> Str:D) is export(:num2str) {
+sub num2str(
+    $num, # decimal integer
+    UInt $base where 2..91
+    --> Str:D
+    ) is export(:num2str) {
     # my $log_b'x = log $x'dec / log $base-o;
     my $numerator   = log $num;
     my $denominator = log $base;
@@ -1139,3 +1081,65 @@ sub num2str($num, # decimal integer
     return $x'b;
 } # num2str
 =end comment
+
+sub create-set(
+    $text,
+    :$debug,
+    --> Set
+    ) is export {
+
+    my @chars = $text.comb.unique;
+    my %h;
+    for @chars {
+        %h{$_} = True;
+    }
+    %h.Set;
+} # sub create-set(
+
+sub create-base-set(
+    UInt $base where ( 1 < $base < 63 ),
+    :$debug,
+    --> Set
+    ) is export {
+    # if the base is < 37 (letter case insensitive)
+    my $CS = 0;
+
+    if $base > 36 {
+        ++$CS;
+        #die "Tom, fix this to handle base > 36";
+    }
+
+    my $first-char-idx = 0;
+    my $F = $first-char-idx;
+    my $first-char = @dec2digit[$first-char-idx];
+    my $FC = $first-char;
+
+    my $last-char-idx  = $base - 1;
+    my $L = $last-char-idx;
+
+    my $last-char = @dec2digit[$last-char-idx];
+    my $LC = $last-char;
+
+    if $debug {
+        say "DEBUG base $base, first char is char index $F, char '$FC'";
+        say "                   last char is char index $L, char '$LC'";
+    }
+
+    my $chars = @dec2digit[$F..$L].join;
+
+    my %h;
+    if not $CS {
+        for $chars.comb -> $c is copy {
+            $c .= Str;
+            $c .= uc;
+            %h{$c} = True;
+        }
+    }
+    else {
+        for $chars.comb -> $c is copy {
+            $c .= Str;
+            %h{$c} = True;
+        }
+    }
+    %h.Set;
+} # sub create-base-set(

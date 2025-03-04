@@ -3,19 +3,21 @@
 NAME
 ====
 
-**Number::Rebase** provides routines to manipulate numbers of differing bases from 2 to 91
+**Number** provides a class and routines to manipulate numbers of differing bases from 2 to 91
 
 SYNOPSIS
 ========
 
 ```raku
-use Number::Rebase;
+use Number;
 ```
 
 DESCRIPTION
 ===========
 
-This module provides some convenience functions to convert unsigned integers between different, commonly used number bases: decimal, hexadecimal, octal, and binary.
+The Number class allows conversion between numbers of differing bases and common mathematical operations on them. Real number operations on bases 2 through 36 are provided using Raku core routines. CAUTION: Real number handling on bases 37 to 91 is more limited and should be treated as experimental.
+
+Also provided are some convenience functions to convert unsigned integers between different, commonly used number bases: decimal, hexadecimal, octal, and binary.
 
 For completeness, this module's routines converts between bases 2 through 91. The advantage of the highest base conversion is that much more compression is available than when encoding binary data with ASCII characters.
 
@@ -38,7 +40,18 @@ The following illustrates the process using Raku routines for the example above:
 
 The default for each provided function is to take a string (valid decimals may be entered as numbers) representing a valid number in one base and transform it into the desired base with no leading zeroes or descriptive prefix (such as '0x', '0o', and '0b') to indicate the type of number. The default is also to use upper-case characters for the hexadecimal results and all bases greater than 10 and less than 37. Bases greater than 36 use a mixture of upper-case and lower-case characters.
 
-There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). There are named parameters to have results in lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), and 16 (hecadecimal). Note that requested prefixes will take up two characters in a requested length. There is also an option (`:$suffix`) to add the appropriate base suffix to any number, the result of which will look like this:
+One can add optional named parameters to provide output formatting features suitable for incuding the values in text:
+
+  * 
+
+There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). There are named parameters to have results in suitable form including in text: lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), 10 (decimal), and 16 (hecadecimal). Examples of each:
+
+    0b11001      # binary
+    0o11001      # octal
+    0d11001      # decimal
+    0x11001      # hexadecimal
+
+Note that requested prefixes will take up two characters in a requested length. There is also an option (`:$suffix`) to add the appropriate base suffix to any number, the result of which will look like this:
 
     '2Zz3_base-62'
 

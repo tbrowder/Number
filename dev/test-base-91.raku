@@ -2,7 +2,7 @@
 
 use lib <../lib>;
 
-use Number::Rebase :dec2digit, :base, :digit2dec; # :ALL;
+use Number :dec2digit, :base, :digit2dec; # :ALL;
 
 {
 my $n = '12345';

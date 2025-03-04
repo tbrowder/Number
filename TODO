@@ -1,6 +1,9 @@
 Possible future features
 ========================
 
+Update from new code changes in module
+  Number::More
+
 handle real numbers (i.e., signed and fractional)
 
 replace complex handling with simple one where possible

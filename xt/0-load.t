@@ -1,6 +1,6 @@
 use Test;
 
-use Number :ALL;
+use Number;
 
 plan 1;
 

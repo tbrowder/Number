@@ -1,7 +1,7 @@
 #!/usr/bin/env raku
 
 use lib <../lib>;
-use Number::Rebase :DEFAULT, :frac;
+use Number :DEFAULT, :frac;
 #use Number::Rebase :DEFAULT;
 
 =begin comment
