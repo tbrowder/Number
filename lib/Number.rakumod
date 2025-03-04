@@ -783,15 +783,16 @@ sub rebase(
         when $base-o == 16 { $bo = 'hex' }
     }
 
-    # TODO
-    if $bi and $bo {
-        note "\nNOTE: Use function '{$bi}2{$bo}' instead for an easier interface.";
+    if $bi and $bo and (0 or $debug) {
+        note "\nDEBUG Use function '{$bi}2{$bo}' instead for an easier interface.";
     }
 
+    =begin comment
     if 10 < $base-i < 36 && $num-i ~~ /Str/ {
         # we MUST use upper case
         $num-i .= uc;
     }
+    =end comment
 
     # treatment varies if in or out base is decimal
     my $num-o;

@@ -38,11 +38,11 @@ The following illustrates the process using Raku routines for the example above:
     my $hex = $dec.base: 16;
     say $hex; # OUTPUT «CB␤»
 
-The default for each provided function is to take a string (valid decimals may be entered as numbers) representing a valid number in one base and transform it into the desired base with no leading zeroes or descriptive prefix (such as '0x', '0o', and '0b') to indicate the type of number. The default is also to use upper-case characters for the hexadecimal results and all bases greater than 10 and less than 37. Bases greater than 36 use a mixture of upper-case and lower-case characters.
+The default for each provided function is to take a string (valid decimals may be entered as numbers) representing a valid number in one base and transform it into the desired base with no leading zeroes or descriptive prefix (such as '0b', '0o', '0d', and '0x') to indicate the type of number. The default is to use upper-case characters for the hexadecimal results and all bases greater than 10 and less than 37. Bases greater than 36 use a mixture of upper-case and lower-case characters.
 
 One can add optional named parameters to provide output formatting features suitable for incuding the values in text:
 
-  * 
+  * TODO FIX THIS 
 
 There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). There are named parameters to have results in suitable form including in text: lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), 10 (decimal), and 16 (hecadecimal). Examples of each:
 

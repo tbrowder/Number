@@ -31,13 +31,13 @@ binary data with ASCII characters.
 Note that bases greater than 36 will use a digits consisting of
 a case-sensitive set of ASCII characters in an array indexed from
 0..base-1, and the reverse mapping is in a hash.  Both exported
-variables are shown below as well in [NUMBERS](./docs/NUMBERS.md).
+variables are shown below as well in L<NUMBERS|./docs/NUMBERS.md>.
 Also included in that document is more information on other exported
 variables, number systems (and references), and their use in this
 module.
 
 The current subroutines are described in detail in
-[SUBS](./docs/SUBS.md) which shows a short description of each
+L<SUBS|./docs/SUBS.md> which shows a short description of each
 exported routine along along with its complete signature.
 
 The functions in this module are recommended for users who don't want
@@ -67,8 +67,8 @@ say $hex; # OUTPUT «CB␤»
 The default for each provided function is to take a string (valid
 decimals may be entered as numbers) representing a valid number in one
 base and transform it into the desired base with no leading zeroes or
-descriptive prefix (such as '0x', '0o', and '0b') to indicate the type
-of number.  The default is also to use upper-case characters for the
+descriptive prefix (such as '0b', '0o', '0d', and '0x') to indicate the type
+of number.  The default is to use upper-case characters for the
 hexadecimal results and all bases greater than 10 and less than 37.
 Bases greater than 36 use a mixture of upper-case and lower-case
 characters.
@@ -77,8 +77,8 @@ One can add optional named parameters to provide output formatting
 features suitable for incuding the values in text:
 
 =begin item
+TODO FIX THIS 
 =end item
-
 
 There is an optional parameter to define desired lengths of results
 (which will result in adding leading zeroes if needed).  There are
@@ -174,7 +174,6 @@ The module provides a class to ease base conversions when handling
 integral or fractional values. Currently, fractional numbers are handled
 from base 2 to base 36 using Raku's core routines. A future 
 version may handle higher bases.
-
 
 =begin code
 class NumObj is export {
