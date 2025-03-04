@@ -309,7 +309,7 @@ sub pad-number(
         }
     }
 
-    if $len > $nct {
+    if $length > $nct {
         # padding required
         # first pad with zeroes
         # create the zero padding
@@ -324,11 +324,13 @@ sub pad-number(
     }
 
     if $suffix {
+        $num .= Str;
 	$num ~= "_base-$base";
     }
     elsif $prefix {
         when $base eq '2'  { $num = '0b' ~ $num }
         when $base eq '8'  { $num = '0o' ~ $num }
+        when $base eq '10' { $num = '0d' ~ $num }
         when $base eq '16' { $num = '0x' ~ $num }
     }
 
@@ -362,7 +364,7 @@ sub hex2dec(
     constant $base-o = 10;
 
     my $dec = parse-base $hex, $base-i;
-    pad-number $dec, $base-o, $len, :$suffix;
+    pad-number $dec, $base-o, :$prefix, :$suffix;
 
     $dec;
 } # hex2dec
@@ -379,6 +381,7 @@ sub hex2bin(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Str
     ) is export(:hex2bin) {
 
@@ -397,6 +400,7 @@ sub hex2bin(
     my $dec = parse-base $hex, $base-i;
     my $bin = $dec.base: $base-o;
     pad-number $bin, $base-o, $len, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix;
 
     $bin;
 } # hex2bin
@@ -413,7 +417,9 @@ sub dec2hex(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
-    --> Str) is export(:dec2hex) {
+    :$debug,
+    --> Str
+    ) is export(:dec2hex) {
 
     my UInt $len = $dec.chars;
 
@@ -426,7 +432,7 @@ sub dec2hex(
     constant $base-o = 16;
 
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
 
     $hex;
 } # dec2hex
@@ -443,6 +449,7 @@ sub dec2bin(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Str
     ) is export(:dec2bin) {
 
@@ -456,7 +463,7 @@ sub dec2bin(
     constant $base-o = 2;
 
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, $len, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix;
 
     $bin;
 } # dec2bin
@@ -473,6 +480,7 @@ sub bin2dec(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Cool
     ) is export(:bin2dec) {
 
@@ -488,7 +496,7 @@ sub bin2dec(
     constant $base-o = 10;
 
     my $dec = parse-base $bin, $base-i;
-    pad-number $dec, $base-o, $len, :$suffix;
+    pad-number $dec, $base-o, :$suffix;
 
     $dec;
 } # bin2dec
@@ -505,7 +513,9 @@ sub bin2hex(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
-    --> Str) is export(:bin2hex) {
+    :$debug,
+    --> Str
+    ) is export(:bin2hex) {
 
     my UInt $len = $bin.chars;
 
@@ -521,7 +531,7 @@ sub bin2hex(
     # need decimal intermediary
     my $dec = parse-base $bin, $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
 
     $hex;
 } # bin2hex
@@ -538,6 +548,7 @@ sub oct2bin(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Str
     ) is export(:oct2bin) {
 
@@ -555,7 +566,7 @@ sub oct2bin(
     # need decimal intermediary
     my $dec = parse-base $oct, $base-i;
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, $len, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix;
 
     $bin;
 } # oct2bin
@@ -572,7 +583,9 @@ sub oct2hex(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
-    --> Str) is export(:oct2hex) {
+    :$debug,
+    --> Str
+    ) is export(:oct2hex) {
 
     my UInt $len = $oct.chars;
 
@@ -588,7 +601,7 @@ sub oct2hex(
     # need decimal intermediary
     my $dec = parse-base $oct, $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
 
     $hex;
 } # oct2hex
@@ -605,6 +618,7 @@ sub oct2dec(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Cool
     ) is export(:oct2dec) {
 
@@ -620,7 +634,7 @@ sub oct2dec(
     constant $base-o = 10;
 
     my $dec = parse-base $oct, $base-i;
-    pad-number $dec, $base-o, $len, :$suffix;
+    pad-number $dec, $base-o, :$suffix;
 
     $dec;
 } # oct2dec
@@ -637,7 +651,9 @@ sub bin2oct(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
-    --> Str) is export(:bin2oct) {
+    :$debug,
+    --> Str
+    ) is export(:bin2oct) {
 
     my UInt $len = $bin.chars;
 
@@ -653,7 +669,8 @@ sub bin2oct(
     # need decimal intermediary
     my $dec = parse-base $bin, $base-i;
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, $len, :$prefix, :$suffix;
+
+    pad-number $oct, $base-o, :$prefix, :$suffix;
 
     $oct;
 } # bin2oct
@@ -670,7 +687,9 @@ sub dec2oct(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
-    --> Cool) is export(:dec2oct) {
+    :$debug,
+    --> Cool
+    ) is export(:dec2oct) {
 
     my UInt $len = $dec.chars;
 
@@ -683,7 +702,7 @@ sub dec2oct(
     constant $base-o =  8;
 
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, $len, :$prefix, :$suffix;
+    pad-number $oct, $base-o, :$prefix, :$suffix;
 
     $oct;
 } # dec2oct
@@ -700,6 +719,7 @@ sub hex2oct(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Str
     ) is export(:hex2oct) {
 
@@ -717,7 +737,7 @@ sub hex2oct(
     # need decimal intermediary
     my $dec = parse-base $hex, $base-i;
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, $len, :$prefix, :$suffix;
+    pad-number $oct, $base-o, :$prefix, :$suffix;
 
     $oct;
 } # hex2oct
@@ -772,6 +792,10 @@ sub rebase(
 	    $bi = 'oct';
 	    $num-i ~~ s:i/^0o//;
 	}
+        when $base-i == 10  {
+	    $bi = 'dec';
+	    $num-i ~~ s:i/^0d//;
+	}
         when $base-i == 16 {
 	    $bi = 'hex';
 	    $num-i ~~ s:i/^0x//;
@@ -780,6 +804,7 @@ sub rebase(
     {
         when $base-o == 2  { $bo = 'bin' }
         when $base-o == 8  { $bo = 'oct' }
+        when $base-o == 10 { $bo = 'dec' }
         when $base-o == 16 { $bo = 'hex' }
     }
 
@@ -814,18 +839,17 @@ sub rebase(
 	    $num-o = to-dec-from-b37-b91 $num-i, $base-o;
 	}
     }
-    elsif ($base-i < 37) && ($base-o < 37) {
+    elsif ($base-i < 37) and ($base-o < 37) {
         # use Raku routine
         # need decimal as intermediary
-        my $dec = parse-base $num-i, $base-i;
+        my $dec = $num-i.parse-base: $base-i;
         $num-o  = $dec.base: $base-o;
     }
     else {
         # may need decimal as intermediary
-	my $dec = 0;
+	my $dec;
 	if $base-i < 37 {
-            # use Raku routine
-            $dec = parse-base $num-i, $base-i;
+            $dec = $num-i.parse-base: $base-i;
 	}
 	else {
 	    $dec = to-dec-from-b37-b91 $num-i, $base-i;
@@ -842,7 +866,7 @@ sub rebase(
 
     # Finally, pad the number, make upper-case and add prefix or suffix as
     # appropriate
-    if $base-o == 2 || $base-o == 8 {
+    if $base-o == 2 || $base-o == 8 || $base-o == 10 {
         pad-number $num-o, $base-o, :$prefix, :$suffix;
     }
     elsif $base-o == 16 {
@@ -867,14 +891,15 @@ sub rebase(
 # str2num
 sub to-dec-from-b37-b91(
     $num,
-    UInt $bi where { 36 < $bi < 92 },
+    UInt $base-i where ( 36 < $base-i < 63 ),
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Cool
-    ) is export(:_to-dec-from-b37-b91) {
+    ) is export(:to-dec-from-b37-b62) {
 
     my UInt $len = $num.chars;
 
@@ -883,8 +908,8 @@ sub to-dec-from-b37-b91(
     $suffix = 0 if not $suffix.defined;
     $LC     = 0 if not $LC.defined;
 
-    # see simple algorithm for base to dec:
-    #`{
+=begin comment
+# see simple algorithm for base to dec:
 
 Let's say you have a number
 
@@ -917,18 +942,25 @@ bunch more examples and they should get easier.
 
 -Doctor Ethan,  The Math Forum
 
-    } # end of in-line comment
+=end comment
 
     # reverse the digits of the input number
     my @num'r = $num.comb; # .reverse;
     my $place = $num.chars;
 
     my $dec = 0;
-    for @num'r -> $digit {
+    
+    for @num'r -> $char  {
 	--$place; # first place is num chars - 1
+        if $char ~~ /:i z/ {
+            note "DEBUG: input char is '$char', place = $place" if $DEBUG;
+        }
 	# need to convert the digit to dec first
-	my $digit-val = %digit2dec{$digit};
-	my $val = $digit-val * $bi ** $place;
+	my $digit-val = %digit2dec{$char};
+        if $char ~~ /:i z/ {
+            note "DEBUG: input char is '$char', digit val is $digit-val" if $DEBUG;
+        }
+	my $val = $digit-val * $base-i ** $place;
 	$dec += $val;
     }
 
@@ -974,12 +1006,13 @@ to convert between logarithms in different bases, the formula:
 
 sub from-dec-to-b37-b91(
     UInt $x'dec,
-    UInt $base-o where ( 36 < $base-o < 92 ),
+    UInt $base-o where ( 36 < $base-o < 63 ),
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     --> Str
     ) is export(:_from-dec-to-b37-b91) {
 
@@ -992,7 +1025,7 @@ sub from-dec-to-b37-b91(
 
     # see Wolfram's solution (article Base, see notes above)
 
-    # need log_b x = ln x / ln b
+    # need ln_b x = ln x / ln b
 
     # note Raku routine 'log' is math function natural log 'ln' if no optional base
     # arg is entered
@@ -1021,14 +1054,14 @@ sub from-dec-to-b37-b91(
 
     @r[$n] = $x'dec;
 
-    # work through the $x'dec.chars places (????)
+    # work through the $x'dec.chars places (positions, indices?)
     # for now just handle integers (later, real, i.e., digits after a fraction point)
-    for $n...0 -> $i { # <= Wolfram text is misleading here???
+    my @rev = (0..$n).reverse;
+    for @rev -> $i { # <= Wolfram text is misleading here
 	my $b'i  = $base-o ** $i;
-        my $fl = floor (@r[$i] / $b'i);
-	@a[$i]   = $fl < 0 ?? 0 !! $fl;
+	@a[$i]   = floor (@r[$i] / $b'i);
 
-        note "  i = $i; a = '@a[$i]'; r = '@r[$i]'" if $DEBUG;
+        say "  i = $i; a = '@a[$i]'; r = '@r[$i]'" if 0 or $DEBUG;
 
         # calc r for next iteration
 	@r[$i-1] = @r[$i] - @a[$i] * $b'i if $i > 0;
@@ -1044,8 +1077,7 @@ sub from-dec-to-b37-b91(
 
     # trim leading zeroes
     $x'b ~~ s/^ 0+ /0/;
-    #$x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
-    $x'b ~~ s:i/^ 0 (\S+) /$0/;
+    $x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
 
     $x'b;
 } # from-dec-to-b37-b91
