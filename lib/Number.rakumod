@@ -276,6 +276,7 @@ sub pad-number(
     :$suffix is copy,
     :$LC is copy,
     ) {
+
     my UInt $len = $num.chars;
 
     $length = 0 if not $length.defined;
@@ -338,17 +339,32 @@ sub pad-number(
 # Purpose : Convert a non-negative hexadecimal number (string) to a decimal number.
 # Params  : Hexadecimal number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
-sub hex2dec(Str:D $hex where &hexadecimal,
-            UInt $len = 0,
-            Bool :$suffix = False,
-            --> Cool) is export(:hex2dec) {
+sub hex2dec(
+    Str:D $hex where &hexadecimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Cool
+    ) is export(:hex2dec) {
+
+    my UInt $len = $hex.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i = 16;
     constant $base-o = 10;
 
     my $dec = parse-base $hex, $base-i;
     pad-number $dec, $base-o, $len, :$suffix;
-    return $dec;
+
+    $dec;
 } # hex2dec
 
 #------------------------------------------------------------------------------
@@ -356,11 +372,23 @@ sub hex2dec(Str:D $hex where &hexadecimal,
 # Purpose : Convert a non-negative hexadecimal number (string) to a binary string.
 # Params  : Hexadecimal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Binary number (string).
-sub hex2bin(Str:D $hex where &hexadecimal,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Str) is export(:hex2bin) {
+sub hex2bin(
+    Str:D $hex where &hexadecimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str
+    ) is export(:hex2bin) {
+
+    my UInt $len = $hex.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i = 16;
     constant $base-o =  2;
@@ -369,7 +397,8 @@ sub hex2bin(Str:D $hex where &hexadecimal,
     my $dec = parse-base $hex, $base-i;
     my $bin = $dec.base: $base-o;
     pad-number $bin, $base-o, $len, :$prefix, :$suffix;
-    return $bin;
+
+    $bin;
 } # hex2bin
 
 #------------------------------------------------------------------------------
@@ -377,18 +406,29 @@ sub hex2bin(Str:D $hex where &hexadecimal,
 # Purpose : Convert a non-negative integer to a hexadecimal number (string).
 # Params  : Non-negative decimal number, desired length (optional), prefix (optional), suffix (optional), lower-case (optional).
 # Returns : Hexadecimal number (string).
-sub dec2hex($dec where &decimal,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            Bool :$LC = False
-            --> Str) is export(:dec2hex) {
+sub dec2hex(
+    $dec where &decimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str) is export(:dec2hex) {
+
+    my UInt $len = $dec.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need base of outgoing number
     constant $base-o = 16;
 
     my $hex = $dec.base: $base-o;
     pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
-    return $hex;
+
+    $hex;
 } # dec2hex
 
 #------------------------------------------------------------------------------
@@ -396,17 +436,29 @@ sub dec2hex($dec where &decimal,
 # Purpose : Convert a non-negative integer to a binary number (string).
 # Params  : Non-negative decimal number, desired length (optional), prefix (optional), suffix (optional).
 # Returns : Binary number (string).
-sub dec2bin($dec where &decimal,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Str) is export(:dec2bin) {
+sub dec2bin(
+    $dec where &decimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str
+    ) is export(:dec2bin) {
+
+    my UInt $len = $dec.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
     # need base of outgoing number
     constant $base-o = 2;
 
     my $bin = $dec.base: $base-o;
     pad-number $bin, $base-o, $len, :$prefix, :$suffix;
-    return $bin;
+
+    $bin;
 } # dec2bin
 
 #------------------------------------------------------------------------------
@@ -416,17 +468,29 @@ sub dec2bin($dec where &decimal,
 # Returns : Decimal number (or string).
 sub bin2dec(
     Str:D $bin where &binary,
-    UInt $len = 0,
-    Bool :$suffix = False,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
     --> Cool
     ) is export(:bin2dec) {
+
+    my UInt $len = $bin.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing numbers
     constant $base-i =  2;
     constant $base-o = 10;
 
     my $dec = parse-base $bin, $base-i;
     pad-number $dec, $base-o, $len, :$suffix;
-    return $dec;
+
+    $dec;
 } # bin2dec
 
 #------------------------------------------------------------------------------
@@ -434,12 +498,22 @@ sub bin2dec(
 # Purpose : Convert a binary number (string) to a hexadecimal number (string).
 # Params  : Binary number (string), desired length (optional), prefix (optional), suffix (optional), lower-case (optional).
 # Returns : Hexadecimal number (string).
-sub bin2hex(Str:D $bin where &binary,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            Bool :$LC = False,
-            --> Str) is export(:bin2hex) {
+sub bin2hex(
+    Str:D $bin where &binary,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str) is export(:bin2hex) {
+
+    my UInt $len = $bin.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i =  2;
     constant $base-o = 16;
@@ -448,7 +522,8 @@ sub bin2hex(Str:D $bin where &binary,
     my $dec = parse-base $bin, $base-i;
     my $hex = $dec.base: $base-o;
     pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
-    return $hex;
+
+    $hex;
 } # bin2hex
 
 #------------------------------------------------------------------------------
@@ -456,10 +531,23 @@ sub bin2hex(Str:D $bin where &binary,
 # Purpose : Convert an octal number (string) to a binary number (string).
 # Params  : Octal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Binary number (string).
-sub oct2bin($oct where &octal, UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Str) is export(:oct2bin) {
+sub oct2bin(
+    $oct where &octal, 
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str
+    ) is export(:oct2bin) {
+
+    my UInt $len = $oct.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i = 8;
     constant $base-o = 2;
@@ -468,7 +556,8 @@ sub oct2bin($oct where &octal, UInt $len = 0,
     my $dec = parse-base $oct, $base-i;
     my $bin = $dec.base: $base-o;
     pad-number $bin, $base-o, $len, :$prefix, :$suffix;
-    return $bin;
+
+    $bin;
 } # oct2bin
 
 #------------------------------------------------------------------------------
@@ -476,11 +565,22 @@ sub oct2bin($oct where &octal, UInt $len = 0,
 # Purpose : Convert an octal number (string) to a hexadecimal number (string).
 # Params  : Octal number (string), desired length (optional), prefix (optional), suffix (optional), lower-case (optional).
 # Returns : Hexadecimal number (string).
-sub oct2hex($oct where &octal, UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            Bool :$LC = False,
-            --> Str) is export(:oct2hex) {
+sub oct2hex(
+    $oct where &octal, 
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str) is export(:oct2hex) {
+
+    my UInt $len = $oct.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i =  8;
     constant $base-o = 16;
@@ -489,7 +589,8 @@ sub oct2hex($oct where &octal, UInt $len = 0,
     my $dec = parse-base $oct, $base-i;
     my $hex = $dec.base: $base-o;
     pad-number $hex, $base-o, $len, :$prefix, :$suffix, :$LC;
-    return $hex;
+
+    $hex;
 } # oct2hex
 
 #------------------------------------------------------------------------------
@@ -497,16 +598,31 @@ sub oct2hex($oct where &octal, UInt $len = 0,
 # Purpose : Convert an octal number (string) to a decimal number.
 # Params  : Octal number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
-sub oct2dec($oct where &octal, UInt $len = 0,
-            Bool :$suffix = False,
-            --> Cool) is export(:oct2dec) {
+sub oct2dec(
+    $oct where &octal, 
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Cool
+    ) is export(:oct2dec) {
+
+    my UInt $len = $oct.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i =  8;
     constant $base-o = 10;
 
     my $dec = parse-base $oct, $base-i;
     pad-number $dec, $base-o, $len, :$suffix;
-    return $dec;
+
+    $dec;
 } # oct2dec
 
 #------------------------------------------------------------------------------
@@ -514,11 +630,22 @@ sub oct2dec($oct where &octal, UInt $len = 0,
 # Purpose : Convert a binary number (string) to an octal number (string).
 # Params  : Binary number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Octal number (string).
-sub bin2oct($bin where &binary,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Str) is export(:bin2oct) {
+sub bin2oct(
+    $bin where &binary,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str) is export(:bin2oct) {
+
+    my UInt $len = $bin.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i = 2;
     constant $base-o = 8;
@@ -527,7 +654,8 @@ sub bin2oct($bin where &binary,
     my $dec = parse-base $bin, $base-i;
     my $oct = $dec.base: $base-o;
     pad-number $oct, $base-o, $len, :$prefix, :$suffix;
-    return $oct;
+
+    $oct;
 } # bin2oct
 
 #------------------------------------------------------------------------------
@@ -535,17 +663,29 @@ sub bin2oct($bin where &binary,
 # Purpose : Convert a non-negative integer to an octal number (string).
 # Params  : Decimal number, desired length (optional), prefix (optional), suffix (optional).
 # Returns : Octal number (string).
-sub dec2oct($dec where &decimal,
-            UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Cool) is export(:dec2oct) {
+sub dec2oct(
+    $dec where &decimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Cool) is export(:dec2oct) {
+
+    my UInt $len = $dec.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need base of outgoing number
     constant $base-o =  8;
 
     my $oct = $dec.base: $base-o;
     pad-number $oct, $base-o, $len, :$prefix, :$suffix;
-    return $oct;
+
+    $oct;
 } # dec2oct
 
 #------------------------------------------------------------------------------
@@ -553,10 +693,23 @@ sub dec2oct($dec where &decimal,
 # Purpose : Convert a hexadecimal number (string) to an octal number (string).
 # Params  : Hexadecimal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Octal number (string).
-sub hex2oct($hex where &hexadecimal, UInt $len = 0,
-            Bool :$prefix = False,
-            Bool :$suffix = False,
-            --> Str) is export(:hex2oct) {
+sub hex2oct(
+    $hex where &hexadecimal, 
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    --> Str
+    ) is export(:hex2oct) {
+
+    my UInt $len = $hex.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
     # need bases of incoming and outgoing number
     constant $base-i = 16;
     constant $base-o =  8;
@@ -565,7 +718,8 @@ sub hex2oct($hex where &hexadecimal, UInt $len = 0,
     my $dec = parse-base $hex, $base-i;
     my $oct = $dec.base: $base-o;
     pad-number $oct, $base-o, $len, :$prefix, :$suffix;
-    return $oct;
+
+    $oct;
 } # hex2oct
 
 #------------------------------------------------------------------------------
@@ -578,12 +732,17 @@ sub rebase(
     $base-i where &all-bases,
     $base-o where &all-bases,
     # optional args
+    :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
     :$debug,
     --> Cool
     ) is export(:baseM2baseN) {
+
+    my UInt $len = $num-i.chars;
+
+    $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
     $LC     = 0 if not $LC.defined;
@@ -642,7 +801,7 @@ sub rebase(
             $num-o = $num-i.base: $base-o;
 	}
 	else {
-            $num-o = _from-dec-to-b37-b91 $num-i, $base-o;
+            $num-o = from-dec-to-b37-b91 $num-i, $base-o;
 	}
     }
     elsif $base-o == 10 {
@@ -651,7 +810,7 @@ sub rebase(
             $num-o = parse-base $num-i, $base-i;
 	}
 	else {
-	    $num-o = _to-dec-from-b37-b91 $num-i, $base-o;
+	    $num-o = to-dec-from-b37-b91 $num-i, $base-o;
 	}
     }
     elsif ($base-i < 37) && ($base-o < 37) {
@@ -668,7 +827,7 @@ sub rebase(
             $dec = parse-base $num-i, $base-i;
 	}
 	else {
-	    $dec = _to-dec-from-b37-b91 $num-i, $base-i;
+	    $dec = to-dec-from-b37-b91 $num-i, $base-i;
 	}
 
 	if $base-o < 37 {
@@ -676,7 +835,7 @@ sub rebase(
             $num-o = $dec.base: $base-o;
 	}
 	else {
-            $num-o = _from-dec-to-b37-b91 $dec, $base-o;
+            $num-o = from-dec-to-b37-b91 $dec, $base-o;
 	}
     }
 
@@ -705,11 +864,23 @@ sub rebase(
 } # rebase
 
 # str2num
-sub _to-dec-from-b37-b91(
+sub to-dec-from-b37-b91(
     $num,
     UInt $bi where { 36 < $bi < 92 },
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
     --> Cool
     ) is export(:_to-dec-from-b37-b91) {
+
+    my UInt $len = $num.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
 
     # see simple algorithm for base to dec:
     #`{
@@ -762,15 +933,15 @@ bunch more examples and they should get easier.
 
     if $DEBUG {
         note qq:to/HERE/;
-        DEBUG: sub _to_dec_from_baseN
+        DEBUG: sub to_dec_from_baseN
                input \$num      = '{$num}'
                input \$base-i   = '$bi';
                calculated \$dec = '$dec';
         HERE
     }
 
-    return $dec;
-} # _to-dec-from-b37-b91
+    $dec;
+} # to-dec-from-b37-b91
 
 #============
 =begin comment
@@ -800,11 +971,23 @@ to convert between logarithms in different bases, the formula:
 =end comment
 #===========
 
-sub _from-dec-to-b37-b91(
-    UInt $x'dec ,
-    UInt $base-o where { 36 < $base-o < 92 },
+sub from-dec-to-b37-b91(
+    UInt $x'dec,
+    UInt $base-o where ( 36 < $base-o < 92 ),
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
     --> Str
     ) is export(:_from-dec-to-b37-b91) {
+
+    my UInt $len = $x'dec.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
 
     # see Wolfram's solution (article Base, see notes above)
 
@@ -818,7 +1001,7 @@ sub _from-dec-to-b37-b91(
     my $log_b'x = $numerator / $denominator;
     if $DEBUG {
         note qq:to/HERE/;
-        DEBUG: sub _from_dec_to_baseN
+        DEBUG: sub from_dec_to_baseN
                input \$x'dec  = '{$x'dec}'
                input \$base-o = '$base-o';
                calculated ln \$x'dec = '$numerator';
@@ -863,8 +1046,8 @@ sub _from-dec-to-b37-b91(
     #$x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
     $x'b ~~ s:i/^ 0 (\S+) /$0/;
 
-    return $x'b;
-} # _from-dec-to-b37-b91
+    $x'b;
+} # from-dec-to-b37-b91
 
 
 # exported subs
@@ -969,7 +1152,7 @@ sub frac(
     $f;
 } # end sub frac
 
-# was _to-dec-from-b37-b91
+# was to-dec-from-b37-b91
 # Extends routine 'parse-base' to base 91 for unsigned integers.
 # Converts a string with a base (radix) of $base to its Numeric
 # (base 10) equivalent.
@@ -1012,7 +1195,7 @@ sub str2num(
 } # str2num
 
 # This version looks excellent for the integer part!
-# was _from-dec-to-b37-b91
+# was from-dec-to-b37-b91
 multi sub num2str(
     UInt:D $dec,
     UInt:D $base
@@ -1030,7 +1213,7 @@ multi sub num2str(
 }
 
 =begin comment
-# was _from-dec-to-b37-b91
+# was from-dec-to-b37-b91
 # Extends method 'base' to base 91 for unsigned integers.
 # Converts an unsigned integer (base 10) to a string using base $base.
 sub num2str(
