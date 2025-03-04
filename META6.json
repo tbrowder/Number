@@ -14,6 +14,7 @@
   "name": "Number",
   "perl": "6.*",
   "provides": {
+    "Copy-of-More": "lib/Copy-of-More.rakumod",
     "Number": "lib/Number.rakumod"
   },
   "resources": [
