@@ -42,7 +42,7 @@ our %digit2dec is export(:digit2dec) = @dec2digit.antipairs;
 
 my token base { ^ 2|8|10|16 $ }
 
-# This is a non-exported sub
+# This is a non-exported sub # and it modifies the input in place
 sub pad-number(
     $num is rw,
     UInt $base where &all-bases,
@@ -51,9 +51,11 @@ sub pad-number(
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
+    :$debug,
     ) {
 
     my UInt $len = $num.chars;
+
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
@@ -117,7 +119,7 @@ sub pad-number(
 # Params  : Hexadecimal number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
 sub hex2dec(
-    Str:D $hex where &hexadecimal,
+    $hex where &hexadecimal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -128,6 +130,7 @@ sub hex2dec(
     ) is export(:hex2dec) {
 
     my UInt $len = $hex.chars;
+
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
@@ -137,8 +140,8 @@ sub hex2dec(
     constant $base-i = 16;
     constant $base-o = 10;
 
-    my $dec = parse-base $hex, $base-i;
-    pad-number $dec, $base-o, :$prefix, :$suffix;
+    my $dec = $hex.parse-base: $base-i;
+    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # hex2dec
@@ -149,7 +152,7 @@ sub hex2dec(
 # Params  : Hexadecimal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Binary number (string).
 sub hex2bin(
-    Str:D $hex where &hexadecimal,
+    $hex where &hexadecimal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -160,6 +163,7 @@ sub hex2bin(
     ) is export(:hex2bin) {
 
     my UInt $len = $hex.chars;
+
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
@@ -170,10 +174,10 @@ sub hex2bin(
     constant $base-o =  2;
 
     # have to get decimal first
-    my $dec = parse-base $hex, $base-i;
+    my $dec = $hex.parse-base: $base-i;
     my $bin = $dec.base: $base-o;
 
-    pad-number $bin, $base-o, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # hex2bin
@@ -195,6 +199,7 @@ sub dec2hex(
     ) is export(:dec2hex) {
 
     my UInt $len = $dec.chars;
+
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
@@ -204,7 +209,7 @@ sub dec2hex(
     constant $base-o = 16;
 
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # dec2hex
@@ -226,6 +231,7 @@ sub dec2bin(
     ) is export(:dec2bin) {
 
     my UInt $len = $dec.chars;
+
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
@@ -235,7 +241,7 @@ sub dec2bin(
     constant $base-o = 2;
 
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # dec2bin
@@ -246,7 +252,7 @@ sub dec2bin(
 # Params  : Binary number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
 sub bin2dec(
-    Str:D $bin where &binary,
+    $bin where &binary,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -266,8 +272,8 @@ sub bin2dec(
     constant $base-i =  2;
     constant $base-o = 10;
 
-    my $dec = parse-base $bin, $base-i;
-    pad-number $dec, $base-o, :$suffix;
+    my $dec = $bin.parse-base: $base-i;
+    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # bin2dec
@@ -278,7 +284,7 @@ sub bin2dec(
 # Params  : Binary number (string), desired length (optional), prefix (optional), suffix (optional), lower-case (optional).
 # Returns : Hexadecimal number (string).
 sub bin2hex(
-    Str:D $bin where &binary,
+    $bin where &binary,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -299,9 +305,9 @@ sub bin2hex(
     constant $base-o = 16;
 
     # need decimal intermediary
-    my $dec = parse-base $bin, $base-i;
+    my $dec = $bin.parse-base: $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # bin2hex
@@ -333,9 +339,9 @@ sub oct2bin(
     constant $base-o = 2;
 
     # need decimal intermediary
-    my $dec = parse-base $oct, $base-i;
+    my $dec = $oct.parse-base: $base-i;
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, :$prefix, :$suffix;
+    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # oct2bin
@@ -367,9 +373,9 @@ sub oct2hex(
     constant $base-o = 16;
 
     # need decimal intermediary
-    my $dec = parse-base $oct, $base-i;
+    my $dec = $oct.parse-base: $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
+    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # oct2hex
@@ -400,8 +406,8 @@ sub oct2dec(
     constant $base-i =  8;
     constant $base-o = 10;
 
-    my $dec = parse-base $oct, $base-i;
-    pad-number $dec, $base-o, :$suffix;
+    my $dec = $oct.parse-base: $base-i;
+    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # oct2dec
@@ -436,7 +442,7 @@ sub bin2oct(
     my $dec = parse-base $bin, $base-i;
     my $oct = $dec.base: $base-o;
 
-    pad-number $oct, $base-o, :$prefix, :$suffix;
+    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # bin2oct
@@ -467,7 +473,7 @@ sub dec2oct(
     constant $base-o =  8;
 
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, :$prefix, :$suffix;
+    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # dec2oct
@@ -499,9 +505,9 @@ sub hex2oct(
     constant $base-o =  8;
 
     # need decimal intermediary
-    my $dec = parse-base $hex, $base-i;
+    my $dec = $hex.parse-base: $base-i;
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, :$prefix, :$suffix;
+    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # hex2oct
@@ -516,7 +522,7 @@ sub rebase(
     $base-i where &all-bases,
     $base-o where &all-bases,
     # optional args
-    :$length is copy, # for padding
+    :$length is copy,
     :$prefix is copy,
     :$suffix is copy,
     :$LC is copy,
@@ -579,7 +585,6 @@ sub rebase(
     my $num-o;
     if $base-i == 10 {
 	if $base-o < 37 {
-            # use Raku routine
             $num-o = $num-i.base: $base-o;
 	}
 	else {
@@ -588,7 +593,6 @@ sub rebase(
     }
     elsif $base-o == 10 {
 	if $base-i < 37 {
-            # use Raku routine
             $num-o = parse-base $num-i, $base-i;
 	}
 	else {
@@ -596,7 +600,6 @@ sub rebase(
 	}
     }
     elsif ($base-i < 37) and ($base-o < 37) {
-        # use Raku routine
         # need decimal as intermediary
         my $dec = $num-i.parse-base: $base-i;
         $num-o  = $dec.base: $base-o;
@@ -613,7 +616,6 @@ sub rebase(
 
         # then convert to desired base
 	if $base-o < 37 {
-            # use Raku routine
             $num-o = $dec.base: $base-o;
 	}
 	else {
@@ -624,22 +626,22 @@ sub rebase(
     # Finally, pad the number, make upper-case, and add prefix or suffix as
     # appropriate
     if $base-o == 2 || $base-o == 8 || $base-o == 10 {
-        pad-number $num-o, $base-o, :$prefix, :$suffix;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif $base-o == 16 {
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$LC;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif (10 < $base-o < 37) {
 	# case insensitive bases
-        pad-number $num-o, $base-o, :$LC, :$suffix;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif (1 < $base-o < 11) {
 	# case N/A bases
-        pad-number $num-o, $base-o, :$suffix;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     else {
 	# case SENSITIVE bases
-        pad-number $num-o, $base-o, :$suffix;
+        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
 
     $num-o;
@@ -719,18 +721,9 @@ bunch more examples and they should get easier.
 	$dec += $val;
     }
 
-    if $DEBUG {
-        note qq:to/HERE/;
-        DEBUG: sub to_dec_from_baseN
-               input \$num      = '{$num}'
-               input \$base-i   = '$bi';
-               calculated \$dec = '$dec';
-        HERE
-    }
     $dec;
 } # to-dec-from-b37-b62
 
-#============
 =begin comment
 
 General method of converting a whole number (decimal) to base b
@@ -749,18 +742,17 @@ where r_n = x and
 
   r_(i-1) = r_i - a_i * b^i
 
-for i = n, n - 1, ..., 1, 0
+for i = n, n -1, ..., 1, 0
 
 to convert between logarithms in different bases, the formula:
 
   log_b x = ln x / ln b
 
 =end comment
-#===========
 
 sub from-dec-to-b37-b62(
-    UInt $x'dec,
-    UInt $base-o where ( 36 < $base-o < 63 ),
+    $x'dec,
+    $base-o where ( 36 < $base-o < 63 ),
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -780,22 +772,9 @@ sub from-dec-to-b37-b62(
 
     # need ln_b x = ln x / ln b
 
-    # note Raku routine 'log' is math function natural log 'ln' if no optional base
+    # note Raku routine 'log' is math function 'ln' if no optional base
     # arg is entered
-    # my $log_b'x = log $x'dec / log $base-o;
-    my $numerator   = log $x'dec;
-    my $denominator = log $base-o;
-    my $log_b'x = $numerator / $denominator;
-    if $DEBUG {
-        note qq:to/HERE/;
-        DEBUG: sub from_dec_to_baseN
-               input \$x'dec  = '{$x'dec}'
-               input \$base-o = '$base-o';
-               calculated ln \$x'dec = '$numerator';
-               calculated ln \base-o = '$denominator';
-               calculated \$log_b'x  = '{$log_b'x}';
-        HERE
-    }
+    my $log_b'x = log $x'dec / log $base-o;
 
     # get place index of first digit
     my $n = floor $log_b'x;
