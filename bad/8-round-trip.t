@@ -44,7 +44,6 @@ lives-ok {
     note "DEBUG: val = '$val'" if $debug;
 }
 
-
 #=begin comment
 # base 64 is causing trouble
 # char is '#'

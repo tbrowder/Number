@@ -2,9 +2,9 @@ use Test;
 
 use Number :ALL;
 
-plan 180;
+my $debug = 0;
 
-my $LC = True;
+my $LC = True; # lower case
 
 # a random set of decimal inputs
 my $nrands = 10; # num loops
@@ -41,3 +41,5 @@ for @uints -> $dec {
     is hex2oct($hex2), $oct;
     is hex2dec($hex2), $dec;
 }
+
+done-testing;

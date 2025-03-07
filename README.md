@@ -42,7 +42,21 @@ The default for each provided function is to take a string (valid decimals may b
 
 One can add optional named parameters to provide output formatting features suitable for incuding the values in text:
 
-  * TODO FIX THIS 
+TODO FIX THIS 
+
+  * :prefix
+
+  * :suffix
+
+  * :length
+
+  * :LC
+
+  * :lc (alias for :LC)
+
+  * :lower-case (alias for :LC)
+
+### :length
 
 There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). There are named parameters to have results in suitable form including in text: lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), 10 (decimal), and 16 (hecadecimal). Examples of each:
 
@@ -51,15 +65,21 @@ There is an optional parameter to define desired lengths of results (which will 
     0d11001      # decimal
     0x11001      # hexadecimal
 
-Note that requested prefixes will take up two characters in a requested length. There is also an option (`:$suffix`) to add the appropriate base suffix to any number, the result of which will look like this:
+Note that requested prefixes will take up two characters in a requested length. 
+
+### :suffix
+
+There is also an option (`:$suffix`) to add the appropriate base suffix to any number, the result of which will look like this:
 
     '2Zz3_base-62'
 
-The suffix overrides any requested prefix.
+The suffix overrides any requested prefix, but any padding for length is available in all cases if the user requests it with a valid ':length' option.
+
+### Environment variables for desired response
 
 The user can define an environment variable to control the reponse to situations where the transformed length is greater than the requested length: (1) ignore and provide the required length (the default), (2) warn of the increased length but provide it, and (3) throw an exception and report the offending data.
 
-The original extended character set (29 more characters) after base62 to base91 (from [https://base91.sourceforge.net/](https://base91.sourceforge.net/)):
+The original extended character set (29 more characters) after base 62 to base 91 (from [https://base91.sourceforge.net/](https://base91.sourceforge.net/)):
 
     ! # $ % & ( ) * + , . / : ; < = > ? @ [ ] ^ _ ` { | } ~ "
 
@@ -99,28 +119,38 @@ Following is the standard digit set for bases 2 through 91 (character 0 through 
         '.' => 90,                                                                                                    # 91
     );
 
-class Number::Rebase::NumObj
-----------------------------
+class Number
+------------
 
 The module provides a class to ease base conversions when handling integral or fractional values. Currently, fractional numbers are handled from base 2 to base 36 using Raku's core routines. A future version may handle higher bases.
 
-    class NumObj is export {
+    class Number is export {
 
         # Original input:
         has      $.number is required; # may have a radix point
-        has UInt $.base where { 1 < $.base < 92 } is required;
+        has UInt $.base where ( 1 < $.base < 92 ) is required;
 
         submethod TWEAK {...}
 
         # The decimal number resulting after the TWEAK:
-        has Int $.integer;      # may be negative
+        has Int $.integer; # may be negative
         has     $.fraction = 0;
 
         # Methods
-        method to-base(UInt $base)   {...}
-        method from-base(UInt $base) {...}
-        method multiply-by($num)     {...}
-        method divide-by($num)       {...}
+        method to-base($base where &all-bases)   {...}
+        method from-base($base where &all-bases) {...}
+
+        method multiply-by($num, $base where &all-bases) {...}
+        method multiply-by(Number:D $o) {...}
+        method times($num, $base where &all-bases) {...}
+        method times(Number:D $o) {...}
+        method mul($num, $base where &all-bases) {...}
+        method mul(Number:D $o) {...}
+
+        method div($num, $base where &all-bases) {...}
+        method div(Number:D $o) {...}
+        method divide-by($num, $base where &all-bases) {...}
+        method divide-by(Number:D $o) {...}
     }
 
 AUTHOR

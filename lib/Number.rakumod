@@ -397,9 +397,8 @@ sub hex2bin(
     constant $base-o =  2;
 
     # have to get decimal first
-    my $dec = parse-base $hex, $base-i;
+    my $dec = $hex.parse-base: $base-i;
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, $len, :$prefix, :$suffix;
     pad-number $bin, $base-o, :$prefix, :$suffix;
 
     $bin;
@@ -744,7 +743,7 @@ sub hex2oct(
 
 #------------------------------------------------------------------------------
 # Subroutine: rebase
-# Purpose : Convert any number (integer or string) and base (2..62) to a number in another base (2..62).
+# Purpose : Convert any number (integer or string) and base (2..91) to a number in another base (2..62).
 # Params  : Number (string), desired length (optional), prefix (optional), suffix (optional), suffix (optional), lower-case (optional).
 # Returns : Desired number (decimal or string) in the desired base.
 sub rebase(
@@ -962,15 +961,6 @@ bunch more examples and they should get easier.
         }
 	my $val = $digit-val * $base-i ** $place;
 	$dec += $val;
-    }
-
-    if $DEBUG {
-        note qq:to/HERE/;
-        DEBUG: sub to_dec_from_baseN
-               input \$num      = '{$num}'
-               input \$base-i   = '$bi';
-               calculated \$dec = '$dec';
-        HERE
     }
 
     $dec;
@@ -1313,17 +1303,11 @@ sub create-set(
 } # sub create-set(
 
 sub create-base-set(
-    UInt $base where ( 1 < $base < 63 ),
+    UInt $base where ( 1 < $base < 92 ),
     :$debug,
     --> Set
     ) is export {
-    # if the base is < 37 (letter case insensitive)
-    my $CS = 0;
 
-    if $base > 36 {
-        ++$CS;
-        #die "Tom, fix this to handle base > 36";
-    }
 
     my $first-char-idx = 0;
     my $F = $first-char-idx;
@@ -1336,26 +1320,26 @@ sub create-base-set(
     my $last-char = @dec2digit[$last-char-idx];
     my $LC = $last-char;
 
-    if $debug {
-        say "DEBUG base $base, first char is char index $F, char '$FC'";
-        say "                   last char is char index $L, char '$LC'";
-    }
-
     my $chars = @dec2digit[$F..$L].join;
 
-    my %h;
-    if not $CS {
-        for $chars.comb -> $c is copy {
-            $c .= Str;
-            $c .= uc;
-            %h{$c} = True;
-        }
+    # if the base is < 37 (letter case insensitive)
+    if $base < 37 {
+        # add the lower-case letters
+        $chars ~= $chars.lc;
     }
-    else {
-        for $chars.comb -> $c is copy {
-            $c .= Str;
-            %h{$c} = True;
-        }
+
+    if 0 or $debug {
+        say "DEBUG base $base, first char is char index $F, char '$FC'";
+        say "                   last char is char index $L, char '$LC'";
+        say "All chars:";
+        say $chars;
+        #say "DEBUG exit";exit;
+    }
+
+    my %h;
+    for $chars.comb -> $c is copy {
+        $c .= Str;
+        %h{$c} = True;
     }
     %h.Set;
 } # sub create-base-set(

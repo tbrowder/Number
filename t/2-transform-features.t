@@ -4,8 +4,6 @@ use Number :ALL;
 
 $Number::LENGTH-HANDLING = 'waRn';
 
-plan 27;
-
 my $prefix = True;
 my $LC     = True;
 
@@ -48,3 +46,6 @@ is oct2hex('77', :prefix, :$LC), '0x3f';
 
 is rebase('Z', 36, 3, :suffix), '1022_base-3', "test suffix";
 is rebase('z', 62, 3, :suffix), '2021_base-3', "test suffix";
+
+done-testing;
+

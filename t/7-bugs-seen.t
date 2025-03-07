@@ -7,8 +7,8 @@ use Number :ALL;
 my $hex = "ffffffffffffffffffffffffffffffff";
 is $hex.chars, 32;
 lives-ok {
-	rebase $hex, 16, 62, 22;
-}
+	rebase $hex, 16, 62; #, 22;
+}, "test 1";
 
 my $uuid = uuid-v4();
 my $nc = $uuid.chars;
@@ -20,8 +20,8 @@ $nc = $uuid.chars;
 # convert to base 62
 
 lives-ok {
-    $uuid = rebase $uuid, 16, 62, 22;
-}
+    $uuid = rebase $uuid, 16, 62; #, 22;
+}, "test 2";
 
 #$uuid = rebase $uuid, 16, 62;
 $nc = $uuid.chars;
@@ -32,8 +32,8 @@ $nc = $uuid.chars;
 $hex = 'e90cdff8d6714c529efead7dfea22262';
 
 lives-ok {
-    $hex = rebase $hex, 16, 62, 22;
-}
+    $hex = rebase $hex, 16, 62; #, 22;
+}, "test 3";
 
 done-testing;
 

@@ -19,8 +19,8 @@ my @dnums = <42 42.1>;
 my @hnums = <42 42.1 e2 e2.a>;
 
 for @dnums -> $number {
-    $o = Number::NumObj.new: :$number, :base(10);
-    isa-ok $o, Number::NumObj;
+    $o = Number.new: :$number, :base(10);
+    isa-ok $o, Number;
     if $number == 42 {
         is $o.integer.Int, 42, "integer: 42";
         is $o.fraction, 0, "fraction: 0";
