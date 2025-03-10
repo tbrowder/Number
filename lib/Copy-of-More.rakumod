@@ -515,7 +515,7 @@ sub bin2hex(
 
     # need decimal intermediary
     #my $dec = $bin.parse-base: $base-i;
-    my $dec = parse-base $bin, $base-i;
+    my $dec = $bin.parse-base: $base-i;
     my $hex = $dec.base: $base-o;
     $hex = pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
@@ -1036,7 +1036,7 @@ sub create-set(
         %h{$_} = True;
     }
     %h.Set;
-}
+} # sub create-set(
 
 sub create-base-set(
     UInt $base where ( 1 < $base < 63 ),
