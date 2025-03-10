@@ -3,26 +3,26 @@ unit module Number::More;
 
 my $DEBUG = 0;
 
-# Export a var for users to set length behavior
-our $LENGTH-HANDLING is export(:DEBUG) = 'ignore'; # other options: 'warn', 'fail'
+my $LH = %*ENV<LENGTH_HANDLING>:exists ??
+         %*ENV<LENGTH_HANDLING> !! 'ignore'; # other options: 'warn', 'fail'
 my token length-action { ^ :i warn|fail $ }
 
 our $bset = "01".comb.Set;
 our $oset = (0..7).Set;
 our $dset = (0..9).Set;
-our $hset = "abcdef".comb.Set (|) $dset;
+our $hset = "ABCDEFabcdef".comb.Set (|) $dset;
 
 # Define tokens for common regexes (no prefixes are allowed)
 my token binary is export(:token-binary)            { ^ <[01]>+ $ }
 my token octal is export(:token-octal)              { ^ <[0..7]>+ $ }
 my token decimal is export(:token-decimal)          { ^ \d+ $ } # actually an int
-my token hexadecimal is export(:token-hecadecimal)  { :i ^ <[a..f\d]>+ $ }   
+my token hexadecimal is export(:token-hexadecimal)  { :i ^ <[a..f\d]>+ $ }
 
 # For general base functions 2..62
-my token all-bases is export(:token-all-bases)      { ^ 
-                                                        <[2..9]>         | 
+my token all-bases is export(:token-all-bases)      { ^
+                                                        <[2..9]>         |
                                                         <[1..5]><[0..9]> |
-                                                        6 <[0..2]> 
+                                                        6 <[0..2]>
                                                     $ }
 
 # Standard digit set for bases 2 through 62 (char 0 through 61).
@@ -42,9 +42,9 @@ our %digit2dec is export(:digit2dec) = @dec2digit.antipairs;
 
 my token base { ^ 2|8|10|16 $ }
 
-# This is a non-exported sub # and it modifies the input in place
+# This is a non-exported sub
 sub pad-number(
-    $num is rw,
+    $num is copy,
     UInt $base where &all-bases,
     # optional args
     :$length is copy, # for padding
@@ -52,6 +52,7 @@ sub pad-number(
     :$suffix is copy,
     :$LC is copy,
     :$debug,
+    --> Cool
     ) {
 
     my UInt $len = $num.chars;
@@ -61,6 +62,10 @@ sub pad-number(
     $suffix = 0 if not $suffix.defined;
     $LC     = 0 if not $LC.defined;
 
+    if $prefix and $suffix {
+        die "FATAL: You cannot select both :prefix and :suffix";
+    }
+
     # This also checks for length error, upper-lower casing, and handling
     if 10 < $base < 37 {
         if $LC {
@@ -69,48 +74,113 @@ sub pad-number(
         }
     }
 
-    my $nc  = $num.chars;
-    # num chars with prefix
-    my $nct = ($prefix && !$suffix) ?? ($nc + 2) !! $nc;
-    if ($length and ($LENGTH-HANDLING ~~ (&length-action)) and ($nct > $length)) {
+    # strip any leading type indicator
+    if $base ~~ /2|8|10|16/ {
+        $num ~~ s/^0 [b|o|d|x]//;
+    }
+    # strip any leading zeroes
+    if $num.chars > 1 {
+        $num ~~ s/^0*//;
+    }
+
+    # now $num should be "clean"
+    my $nc  = $num.chars; # with no extra characters (no leading zeroes)
+
+    # num pad zeroes with no prefix
+    my $npad0 = $length > $nc ?? ($length - $nc) !! 0;
+    if $prefix {
+        $npad0 -= 2;
+        $npad0 = 0 if $npad0 < 0;
+    }
+
+    my $ncmin = $prefix ?? ($nc + 2) !! $nc;
+    if ($length and ($LH ~~ (&length-action)) and ($ncmin > $length)) {
         my $msg = "Desired length ($length) of number '$num' is\
                      less than required by it";
         $msg ~= " and its prefix" if $prefix;
-        $msg ~= " ($nct).";
+        $msg ~= " ($ncmin).";
 
-        if $LENGTH-HANDLING ~~ /$ :i warn $/ {
+        if $LH ~~ /$ :i warn $/ {
             note "WARNING: $msg";
+        }
+        elsif $LH ~~ /$ :i ignore $/ {
+            ; # okay
         }
         else {
             die "FATAL: $msg";
         }
     }
 
-    if $length > $nct {
-        # padding required
-        # first pad with zeroes
-        # create the zero padding
-        my $zpad = 0 x ($length - $nct);
+    =begin comment
+    padding, num raw length, and prefixes
+    num  length prefix result
+    x    0      none   x
+    x    1      none   x
+    x    2      none   0x
+    x    3      none   00x
+    x    4      none   000x
+
+    x    1      0b     0bx
+    x    2      0b     0bx
+    x    3      0b     0bx
+    x    4      0b     0b0x
+
+    xxx  0      none   xxx
+    xxx  2      none   xxx
+    xxx  3      none   xxx
+    xxx  4      none   0xxx
+
+    xxx  0      0b     0bxxx
+    xxx  2      0b     0bxxx
+    xxx  3      0b     0bxxx
+    xxx  4      0b     0bxxx
+    xxx  5      0b     0bxxx
+    xxx  6      0b     0b0xxx
+    =end comment
+
+    if $npad0 {
+        # padding with zeross is required
+        # first pad with zeroes, less any desired prefix
+        my $zpad = '0' x $npad0;
         $num = $zpad ~ $num;
+        $nc  = $num.chars;
 
         # now the following test should always be true!!
-        if $len {
+        unless $length > $ncmin {
             die "debug FATAL: unexpected \$length ($length)\
-                NOT greater than \$nc ($nc)";
+                NOT greater than \$ncmin ($ncmin)";
         }
     }
 
-    if $suffix {
-        $num .= Str;
-	$num ~= "_base-$base";
-    }
-    elsif $prefix {
-        when $base eq '2'  { $num = '0b' ~ $num }
-        when $base eq '8'  { $num = '0o' ~ $num }
-        when $base eq '10' { $num = '0d' ~ $num }
-        when $base eq '16' { $num = '0x' ~ $num }
+    if $prefix {
+        when $base == 2  { $num = '0b' ~ $num }
+        when $base == 8  { $num = '0o' ~ $num }
+        when $base == 10 { $num = '0d' ~ $num }
+        when $base == 16 { $num = '0x' ~ $num }
     }
 
+    if $suffix {
+        my @c = $base.comb;
+        my $s;
+        for @c {
+            when /0/ { $s ~= "\x2080" }
+            when /1/ { $s ~= "\x2081" }
+            when /2/ { $s ~= "\x2082" }
+            when /3/ { $s ~= "\x2083" }
+            when /4/ { $s ~= "\x2084" }
+            when /5/ { $s ~= "\x2085" }
+            when /6/ { $s ~= "\x2086" }
+            when /7/ { $s ~= "\x2087" }
+            when /8/ { $s ~= "\x2088" }
+            when /9/ { $s ~= "\x2089" }
+            default {
+                die "FATAL: Unknown base digit '$_'";
+            }
+        }
+	$num ~= $s;
+    }
+
+    $num
 } # pad-number
 
 #------------------------------------------------------------------------------
@@ -141,7 +211,7 @@ sub hex2dec(
     constant $base-o = 10;
 
     my $dec = $hex.parse-base: $base-i;
-    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $dec = pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # hex2dec
@@ -177,7 +247,7 @@ sub hex2bin(
     my $dec = $hex.parse-base: $base-i;
     my $bin = $dec.base: $base-o;
 
-    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $bin = pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # hex2bin
@@ -208,8 +278,8 @@ sub dec2hex(
     # need base of outgoing number
     constant $base-o = 16;
 
-    my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    my $hex = $dec.Numeric.base: $base-o;
+    $hex = pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # dec2hex
@@ -240,16 +310,155 @@ sub dec2bin(
     # need base of outgoing number
     constant $base-o = 2;
 
-    my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    my $bin = $dec.Numeric.base: $base-o;
+    $bin = pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # dec2bin
 
 #------------------------------------------------------------------------------
+# Subroutine: bin2bin
+# Purpose : Convert a binary number (string) to a binary number with possible
+#           augmented features
+# Params  : Binary number (string)
+# Options : Desired length (padding with zeroes), prefix, suffix
+# Returns : Binary number (or string).
+sub bin2bin(
+    $bin-i where &binary,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Str
+    ) is export(:bin2bin) {
+
+    my UInt $len = $bin-i.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
+    # no change of base needed
+    constant $base-o = 2;
+
+    my $bin-o = $bin-i;
+    $bin-o = pad-number $bin-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+
+    $bin-o;
+} # bin2bin
+
+#------------------------------------------------------------------------------
+# Subroutine: oct2oct
+# Purpose : Convert an octal number (string) to an octal number with
+#           possible augmented features
+# Params  : Octal number (string)
+# Options : Desired length (padding with zeroes), prefix, suffix
+# Returns : Octal number (or string).
+sub oct2oct(
+    $oct-i where &octal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Cool
+    ) is export(:oct2oct) {
+
+    my UInt $len = $oct-i.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
+    # no change of base needed
+    constant $base-o = 8;
+
+    my $oct-o = $oct-i;
+    $oct-o = pad-number $oct-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+
+    $oct-o;
+} # oct2oct
+
+#------------------------------------------------------------------------------
+# Subroutine: dec2dec
+# Purpose : Convert an decimal number (string) to an decimal number with
+#           possible augmented features
+# Params  : Decimal number (string)
+# Options : Desired length (padding with zeroes), prefix, suffix
+# Returns : Digital number (or string).
+sub dec2dec(
+    $dec-i where &decimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Cool
+    ) is export(:dec2dec) {
+
+    my UInt $len = $dec-i.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
+    # no change in base needed
+    constant $base-o = 10;
+
+    my $dec-o = $dec-i.Numeric;
+    $dec-o = pad-number $dec-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+
+    $dec-o;
+} # dec2dec
+
+#------------------------------------------------------------------------------
+# Subroutine: hex2hex
+# Purpose : Convert a hexadecimal number (string) to a hexadecimal number with
+#           possible augmented features
+# Params  : Hexadecimal number (string)
+# Options : Desired length (padding with zeroes), prefix, suffix
+# Returns : Hexadecimal number (or string).
+sub hex2hex(
+    $hex-i where &hexadecimal,
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Cool
+    ) is export(:hex2hex) {
+
+    my UInt $len = $hex-i.chars;
+
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
+    # no change of base needed
+    constant $base-o = 16;
+
+    my $hex-o = $hex-i;
+    $hex-o = pad-number $hex-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+
+    $hex-o;
+} # hex2hex
+
+#------------------------------------------------------------------------------
 # Subroutine: bin2dec
+# Purpose : Convert a binary number (string) to a decimal number with
+#           possible augmented features
 # Purpose : Convert a binary number (string) to a decimal number.
-# Params  : Binary number (string), desired length (optional), suffix (optional).
+# Params  : Binary number (string)
+# Options : Desired length (padding with zeroes), prefix, suffix
 # Returns : Decimal number (or string).
 sub bin2dec(
     $bin where &binary,
@@ -273,7 +482,7 @@ sub bin2dec(
     constant $base-o = 10;
 
     my $dec = $bin.parse-base: $base-i;
-    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $dec = pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # bin2dec
@@ -305,9 +514,10 @@ sub bin2hex(
     constant $base-o = 16;
 
     # need decimal intermediary
-    my $dec = $bin.parse-base: $base-i;
+    #my $dec = $bin.parse-base: $base-i;
+    my $dec = parse-base $bin, $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $hex = pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # bin2hex
@@ -341,7 +551,7 @@ sub oct2bin(
     # need decimal intermediary
     my $dec = $oct.parse-base: $base-i;
     my $bin = $dec.base: $base-o;
-    pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $bin = pad-number $bin, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $bin;
 } # oct2bin
@@ -352,7 +562,7 @@ sub oct2bin(
 # Params  : Octal number (string), desired length (optional), prefix (optional), suffix (optional), lower-case (optional).
 # Returns : Hexadecimal number (string).
 sub oct2hex(
-    $oct where &octal, 
+    $oct where &octal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -375,7 +585,7 @@ sub oct2hex(
     # need decimal intermediary
     my $dec = $oct.parse-base: $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $hex = pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # oct2hex
@@ -386,7 +596,7 @@ sub oct2hex(
 # Params  : Octal number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
 sub oct2dec(
-    $oct where &octal, 
+    $oct where &octal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -407,7 +617,7 @@ sub oct2dec(
     constant $base-o = 10;
 
     my $dec = $oct.parse-base: $base-i;
-    pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $dec = pad-number $dec, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $dec;
 } # oct2dec
@@ -439,10 +649,10 @@ sub bin2oct(
     constant $base-o = 8;
 
     # need decimal intermediary
-    my $dec = parse-base $bin, $base-i;
+    my $dec = $bin.parse-base: $base-i;
     my $oct = $dec.base: $base-o;
 
-    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $oct = pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # bin2oct
@@ -472,8 +682,8 @@ sub dec2oct(
     # need base of outgoing number
     constant $base-o =  8;
 
-    my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    my $oct = $dec.Numeric.base: $base-o;
+    $oct = pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # dec2oct
@@ -484,7 +694,7 @@ sub dec2oct(
 # Params  : Hexadecimal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Octal number (string).
 sub hex2oct(
-    $hex where &hexadecimal, 
+    $hex where &hexadecimal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -507,7 +717,7 @@ sub hex2oct(
     # need decimal intermediary
     my $dec = $hex.parse-base: $base-i;
     my $oct = $dec.base: $base-o;
-    pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
+    $oct = pad-number $oct, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $oct;
 } # hex2oct
@@ -547,7 +757,7 @@ sub rebase(
 
     # check for same bases
     if $base-i eq $base-o {
-        die "FATAL: Both bases are the same ($base-i), no conversion necessary."
+        say "WARNING: Both bases are the same ($base-i), no conversion necessary."
     }
 
     # check for known bases, eliminate any prefixes
@@ -626,22 +836,22 @@ sub rebase(
     # Finally, pad the number, make upper-case, and add prefix or suffix as
     # appropriate
     if $base-o == 2 || $base-o == 8 || $base-o == 10 {
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+        $num-o = pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif $base-o == 16 {
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+        $num-o = pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif (10 < $base-o < 37) {
 	# case insensitive bases
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+        $num-o = pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     elsif (1 < $base-o < 11) {
 	# case N/A bases
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+        $num-o = pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
     else {
 	# case SENSITIVE bases
-        pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
+        $num-o = pad-number $num-o, $base-o, :$prefix, :$suffix, :$length, :$LC;
     }
 
     $num-o;
@@ -706,7 +916,7 @@ bunch more examples and they should get easier.
     my $place = $num.chars;
 
     my $dec = 0;
-    
+
     for @num'r -> $char  {
 	--$place; # first place is num chars - 1
         if $char ~~ /:i z/ {
@@ -819,7 +1029,7 @@ sub create-set(
     :$debug,
     --> Set
     ) is export {
-    
+
     my @chars = $text.comb.unique;
     my %h;
     for @chars {
@@ -834,13 +1044,6 @@ sub create-base-set(
     --> Set
     ) is export {
 
-    # if the base is < 37 (letter case insensitive)
-    my $CS = 0;
-
-    if $base > 36 {
-        ++$CS;
-        #die "Tom, fix this to handle base > 36";
-    }
 
     my $first-char-idx = 0;
     my $F = $first-char-idx;
@@ -859,21 +1062,16 @@ sub create-base-set(
     }
 
     my $chars = @dec2digit[$F..$L].join;
+    # if the base is < 37 (letter case insensitive)
+    if $base < 37 {
+        # add lower-case versions of the letters
+        $chars ~= $chars.lc
+    }
 
     my %h;
-    if not $CS {
-        for $chars.comb -> $c is copy {
-            $c .= Str;
-            $c .= uc;
-            %h{$c} = True;
-        }
-    }
-    else {
-        for $chars.comb -> $c is copy {
-            $c .= Str;
-            %h{$c} = True;
-        }
+    for $chars.comb -> $c is copy {
+        $c .= Str;
+        %h{$c} = True;
     }
     %h.Set;
 }
-
