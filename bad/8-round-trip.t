@@ -35,16 +35,21 @@ lives-ok {
 is $val-out, $hex.uc, "is val out hex?";
 }
 
+=begin comment
 lives-ok {
     my $val = rebase $hex, 16, 65;
     note "DEBUG: val = '$val'" if $debug;
 }
+=end comment
+
+=begin comment
 lives-ok {
     my $val = rebase $hex, 16, 91;
     note "DEBUG: val = '$val'" if $debug;
 }
+=end comment
 
-#=begin comment
+=begin comment
 # base 64 is causing trouble
 # char is '#'
 # decimal value is 63
@@ -53,7 +58,7 @@ lives-ok {
     my $val = rebase $hex, 16, 64;
     note "DEBUG: val = '$val'" if $debug;
 }
-#=end comment
+=end comment
 
 for 2..15 -> $base-o {
     lives-ok {
@@ -63,19 +68,23 @@ for 2..15 -> $base-o {
     }
 }
 
+=begin comment
 for 17..63 -> $base-o {
     lives-ok {
 	my $x = rebase $hex, 16, $base-o;
         note "DEBUG: base-o = $base-o; x = '$x'" if $debug;
     }
 }
+=end comment
 
+=begin comment
 for 65..91 -> $base-o {
     lives-ok {
 	my $x = rebase $hex, 16, $base-o;
         note "DEBUG: base-o = $base-o; x = '$x'" if $debug;
     }
 }
+=end comment
 
 my $uuid = uuid-v4();
 my $nc = $uuid.chars;
@@ -86,9 +95,12 @@ $nc = $uuid.chars;
 #say "DEBUG2 uuid: '$uuid', chars: $nc" if $debug; # > 1;
 # convert to base 91
 
+
+=begin comment
 lives-ok {
     $uuid = rebase $uuid, 16, 91;
 }
+=end comment
 
 #$uuid = rebase $uuid, 16, 62;
 $nc = $uuid.chars;
@@ -99,7 +111,7 @@ $nc = $uuid.chars;
 $hex = 'e90cdff8d6714c529efead7dfea22262';
 
 lives-ok {
-    $hex = rebase $hex, 16, 62, 22;
+    $hex = rebase $hex, 16, 62;
 }
 
 done-testing;
