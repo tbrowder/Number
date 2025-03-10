@@ -17,7 +17,7 @@ for @uints -> $dec {
     my $hex  = $dec.base: 16; # alpha chars are upper case
     my $hex2 = lc $hex;       # a lower-case version
 
-    # the tests 18
+    # the N tests
     is bin2bin($bin), $bin;
     is bin2oct($bin), $oct;
     is bin2dec($bin), $dec;

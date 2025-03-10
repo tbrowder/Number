@@ -742,7 +742,7 @@ sub bin2hex(
     # need decimal intermediary
     my $dec = parse-base $bin, $base-i;
     my $hex = $dec.base: $base-o;
-    pad-number $hex, $base-o, :$prefix, :$suffix, :$LC;
+    $hex = pad-number $hex, $base-o, :$prefix, :$suffix, :$length, :$LC;
 
     $hex;
 } # bin2hex
