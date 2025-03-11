@@ -274,7 +274,7 @@ sub pad-number(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) {
@@ -418,7 +418,7 @@ sub hex2dec(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:hex2dec) {
@@ -451,7 +451,7 @@ sub hex2bin(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:hex2bin) {
@@ -487,7 +487,7 @@ sub dec2hex(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:dec2hex) {
@@ -519,7 +519,7 @@ sub dec2bin(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:dec2bin) {
@@ -553,7 +553,7 @@ sub bin2bin(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:bin2bin) {
@@ -587,7 +587,7 @@ sub oct2oct(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:oct2oct) {
@@ -621,7 +621,7 @@ sub dec2dec(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:dec2dec) {
@@ -655,7 +655,7 @@ sub hex2hex(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:hex2hex) {
@@ -690,7 +690,7 @@ sub bin2dec(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:bin2dec) {
@@ -723,7 +723,7 @@ sub bin2hex(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:bin2hex) {
@@ -758,7 +758,7 @@ sub oct2bin(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:oct2bin) {
@@ -793,7 +793,7 @@ sub oct2hex(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:oct2hex) {
@@ -828,7 +828,7 @@ sub oct2dec(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:oct2dec) {
@@ -861,7 +861,7 @@ sub bin2oct(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:bin2oct) {
@@ -897,7 +897,7 @@ sub dec2oct(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:dec2oct) {
@@ -929,7 +929,7 @@ sub hex2oct(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:hex2oct) {
@@ -966,7 +966,7 @@ sub rebase(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:baseM2baseN) {
@@ -1108,7 +1108,7 @@ sub to-dec-from-b37-b91(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Cool
     ) is export(:to-dec-from-b37-b62) {
@@ -1214,7 +1214,7 @@ sub from-dec-to-b37-b91(
     :$length is copy, # for padding
     :$prefix is copy,
     :$suffix is copy,
-    :$LC is copy,
+    :lower-case(:lc(:$LC)) is copy,
     :$debug,
     --> Str
     ) is export(:_from-dec-to-b37-b91) {
