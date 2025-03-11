@@ -2,7 +2,7 @@ use Test;
 
 use Number :ALL;
 
-plan 54;
+plan 81;
 
 # testing single chars only
 my $prefix = True;
@@ -29,6 +29,7 @@ for 10..36 -> $dec {
 
     die "FATAL: Output number is NOT a single char." if $tnum-out.chars != 1;
 
+    =begin comment
     # special cases
     if $bo eq '2' {
         my $out = '0b' ~ $tnum-out;
@@ -38,7 +39,13 @@ for 10..36 -> $dec {
         my $out = '0o' ~ $tnum-out;
         is rebase($tnum-in, $bi, $bo, :$prefix), $out;
     }
-    elsif $bo eq '16' {
+    elsif $bo eq '10' {
+        my $out = '0d' ~ $tnum-out;
+        is rebase($tnum-in, $bi, $bo, :$prefix), $out;
+    }
+    =end comment
+
+    if $bo eq '16' {
         my $out = '0x' ~ $tnum-out;
         is rebase($tnum-in, $bi, $bo, :$prefix), $out;
         $out = '0x' ~ lc $tnum-out;
@@ -46,9 +53,12 @@ for 10..36 -> $dec {
         $out = lc $tnum-out;
         is rebase($tnum-in, $bi, $bo, :$LC), $out;
     }
-    elsif $bo > 10 && $bo < 37 {
+
+    if 10 < $bo < 37 {
         # bases 11 through 36 are NOT case sensitive
-        my $out = lc $tnum-out;
+        my $out = $tnum-out;
+        is rebase($tnum-in, $bi, $bo), $out;
+        $out .= lc;
         is rebase($tnum-in, $bi, $bo, :$LC), $out;
     }
 }

@@ -2,7 +2,7 @@ use Test;
 
 use Number :ALL;
 
-plan 61;
+plan 62;
 
 # error conditions
 dies-ok { 
@@ -12,8 +12,6 @@ dies-ok {
 for 1..61 -> $i {
     my $bi = 10;
     my $bo = $i+1;
-
-    next if $bi == $bo;
 
     # use exact definitions of the decimal number in the desired output base
     # use @dec2digit
