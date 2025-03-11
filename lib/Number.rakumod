@@ -1432,11 +1432,11 @@ sub str2num(
 
 # This version looks excellent for the integer part!
 # was from-dec-to-b37-b91
-multi sub num2str(
+multi sub UInt2numstr(
     UInt:D $dec,
-    UInt:D $base
-    --> Str
-    ) is export(:num2str) {
+    $base where (36 < $base < 92),
+    --> Cool
+    ) is export(:UInt2numstr) {
     my $int = '';
     my $rem = $dec;
     loop {
@@ -1520,7 +1520,6 @@ sub create-base-set(
     :$debug,
     --> Set
     ) is export {
-
 
     my $first-char-idx = 0;
     my $F = $first-char-idx;

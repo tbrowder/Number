@@ -71,7 +71,7 @@ Note that requested prefixes will take up two characters in a requested length.
 
 There is also an option (`:$suffix`) to add the appropriate base suffix to any number, the result of which will look like this:
 
-    '2Zz3_base-62'
+    '2Zz3₆₂' # <== note the two smaller, trailing base 62 indicator
 
 The suffix overrides any requested prefix, but any padding for length is available in all cases if the user requests it with a valid ':length' option.
 

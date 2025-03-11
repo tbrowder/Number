@@ -9,30 +9,35 @@ my $debug = 0;
 # a UInt as input
 my $hex  =  "ffffffffffffffffffffffffffffffff";
 my $hexn = 0xffffffffffffffffffffffffffffffff;
+
 # note default alphabet for base 36 or less in Raku is upper case
-#is $hex.chars, 32;
 
 my ($val-out, $val-in, $bo, $bi);
+
 for $hex, $hexn -> $h {
-#for $hex -> $h {
-$val-in  = <<$h>>;
-$bi = 16;
-$bo = 10;
-lives-ok {
-    $val-out = str2num $val-in, $bi;
-    note "DEBUG: val-in  = '$val-in'; base $bi"; # if $debug;
-    note "       val-out = '$val-out'; base $bo'";
-}, "lives ok: str2num";
+    $val-in  = <<$h>>;
+    $bi = 16;
+    $bo = 10;
 
-$val-in = $val-out;
-($bi, $bo) = ($bo, $bi);
-lives-ok {
-    $val-out = num2str $val-in, 16;
-    note "DEBUG: val-in  = '$val-in'; base 10"; # if $debug;
-    note "       val-out = '$val-out'; base 16'";
-}, "lives ok: num2str";
+    note "Using sub str2num...";
+    lives-ok {
+        $val-out = str2num $val-in, $bi;
+        note "DEBUG: val-in  = '$val-in'; base $bi"; # if $debug;
+        note "       val-out = '$val-out'; base $bo'";
+    }, "lives ok: str2num";
 
-is $val-out, $hex.uc, "is val out hex?";
+    note "Swapping val-in and val-out...";
+    $val-in = $val-out;
+    ($bi, $bo) = ($bo, $bi);
+
+    note "Using sub num2str...";
+    lives-ok {
+        $val-out = num2str $val-in, $bi;
+        note "DEBUG: val-in  = '$val-in'; base $bi"; # if $debug;
+        note "       val-out = '$val-out'; base $bo'";
+    }, "lives ok: num2str";
+
+    is $val-out, $hex.uc, "is val out hex?";
 }
 
 =begin comment

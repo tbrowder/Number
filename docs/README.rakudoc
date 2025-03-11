@@ -113,7 +113,7 @@ appropriate base suffix to any number, the result of which will look
 like this:
 
 =begin code
-'2Zz3_base-62'
+'2Zz3₆₂' # <== note the two smaller, trailing base 62 indicator
 =end code
 
 The suffix overrides any requested prefix, but any padding for length
