@@ -21,7 +21,7 @@
   ],
   "source-url": "https://github.com/tbrowder/Number.git",
   "support": {
-    "bugtracker": "https://github.com/tbrowder/Number-Rebase-Raku/issues"
+    "bugtracker": "https://github.com/tbrowder/Number/issues"
   },
   "tags": [
     "number",
