@@ -167,9 +167,9 @@ has      $.base;               # optional upon entry with base modifiers,
 has     $.decimal;
 
 # the pieces for use with bases > 36
-has     $.sign-part = '';      # or '+' or '-'
-has     $.integer-part = '';   # takes the sign, if any
-has     $.fraction-part = '0'; # fractional part
+has Str $.sign-part = '';      # or '+' or '-'
+has Str $.integer-part = '';   # takes the sign, if any
+has Str $.fraction-part = '0'; # fractional part
 
 submethod TWEAK {
     if $!number ~~ Str {
@@ -272,6 +272,11 @@ submethod TWEAK {
         $!decimal = $s.parse-base: $!base;
         
     }
+    else {
+        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
+        exit;
+    }
+
     
     =begin comment
     # shouldn't need this:

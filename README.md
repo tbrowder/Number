@@ -21,7 +21,7 @@ Also provided are some convenience functions to convert unsigned integers betwee
 
 For completeness, this module's routines converts between bases 2 through 91. The advantage of the highest base conversion is that much more compression is available than when encoding binary data with ASCII characters.
 
-Note that bases greater than 36 will use a digits consisting of a case-sensitive set of ASCII characters in an array indexed from 0..base-1, and the reverse mapping is in a hash. Both exported variables are shown below as well in [NUMBERS](./docs/NUMBERS.md). Also included in that document is more information on other exported variables, number systems (and references), and their use in this module.
+Note that bases greater than 36 will use digits consisting of a case-sensitive set of ASCII characters in an array indexed from 0..base-1, and the reverse mapping is in a hash. Both exported variables are shown below as well in [NUMBERS](./docs/NUMBERS.md). Also included in that document is more information on other exported variables, number systems (and references), and their use in this module.
 
 The current subroutines are described in detail in [SUBS](./docs/SUBS.md) which shows a short description of each exported routine along along with its complete signature.
 
@@ -31,7 +31,7 @@ As an example of the detail involved, any transformation from a non-decimal base
 
 The following illustrates the process using Raku routines for the example above:
 
-    my $bin = '11001011';
+    my $bin = '-1100.1011';
     my $dec = $bin.parse-base: 2;
     say $dec; # OUTPUT: «203␤»
 
