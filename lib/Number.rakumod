@@ -35,48 +35,6 @@ our token all-bases is export(:token-all-bases)  { ^
                                                  $ }
 
 =begin comment
-our $base63 is export(:base63) = 
-            ( 0..9, "A".."Z", "a".."z", '!' ).join; # case-sensitive
-our $base64 is export(:base64) = 
-            ( 0..9, "A".."Z", "a".."z", '!'..'#' ).join; # case-sensitive
-
-# extended to base 91
-our token base63 is export(:token-base63)           { ^ <[A..Za..z\d ! ]>+ $ }  # case-sensitive, multiple chars
-our token base64 is export(:token-base64)           { ^ <[A..Za..z\d ! # ]>+ $ }  # case-sensitive, multiple chars
-our token base65 is export(:token-base65)           { ^ <[A..Za..z\d ! # $ ]>+ $ }  # case-sensitive, multiple chars
-our token base66 is export(:token-base66)           { ^ <[A..Za..z\d ! # $ % ]>+ $ }  # case-sensitive, multiple chars
-our token base67 is export(:token-base67)           { ^ <[A..Za..z\d ! # $ % & ]>+ $ }  # case-sensitive, multiple chars
-our token base68 is export(:token-base68)           { ^ <[A..Za..z\d ! # $ % & ( ]>+ $ }  # case-sensitive, multiple chars
-our token base69 is export(:token-base69)           { ^ <[A..Za..z\d ! # $ % & ( ) ]>+ $ }  # case-sensitive, multiple chars
-our token base70 is export(:token-base70)           { ^ <[A..Za..z\d ! # $ % & ( ) * ]>+ $ }  # case-sensitive, multiple chars
-our token base71 is export(:token-base71)           { ^ <[A..Za..z\d ! # $ % & ( ) * + ]>+ $ }  # case-sensitive, multiple chars
-our token base72 is export(:token-base72)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , ]>+ $ }  # case-sensitive, multiple chars
-
-# At this point we swap the original positions of the period and the double quotation mark
-# in order to use the period as a radix point for bases 2..90.
-our token base73 is export(:token-base73)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " ]>+ $ }  # case-sensitive, multiple chars
-our token base74 is export(:token-base74)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / ]>+ $ }  # case-sensitive, multiple chars
-our token base75 is export(:token-base75)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ]>+ $ }  # case-sensitive, multiple chars
-our token base76 is export(:token-base76)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; ]>+ $ }  # case-sensitive, multiple chars
-our token base77 is export(:token-base77)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < ]>+ $ }  # case-sensitive, multiple chars
-our token base78 is export(:token-base78)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = ]>+ $ }  # case-sensitive, multiple chars
-our token base79 is export(:token-base79)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ]>+ $ }  # case-sensitive, multiple chars
-our token base80 is export(:token-base80)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? ]>+ $ }  # case-sensitive, multiple chars
-our token base81 is export(:token-base81)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ ]>+ $ }  # case-sensitive, multiple chars
-our token base82 is export(:token-base82)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ ]>+ $ }  # case-sensitive, multiple chars
-our token base83 is export(:token-base83)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ]>+ $ }  # case-sensitive, multiple chars
-our token base84 is export(:token-base84)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ ]>+ $ }  # case-sensitive, multiple chars
-our token base85 is export(:token-base85)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ]>+ $ }  # case-sensitive, multiple chars
-our token base86 is export(:token-base86)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` ]>+ $ }  # case-sensitive, multiple chars
-our token base87 is export(:token-base87)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { ]>+ $ }  # case-sensitive, multiple chars
-our token base88 is export(:token-base88)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | ]>+ $ }  # case-sensitive, multiple chars
-our token base89 is export(:token-base89)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ]>+ $ }  # case-sensitive, multiple chars
-our token base90 is export(:token-base90)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ~ ]>+ $ }  # case-sensitive, multiple chars
-
-# Note base91 cannot have the period as a radix point but we handle it
-# with a unicode character above the ASCII range.
-our token base91 is export(:token-base91)           { ^ <[A..Za..z\d ! # $ % & ( ) * + , " / : ; < = > ? @ [ \] ^ _ ` { | } ~ .]>+ $ }  # case-sensitive, multiple chars
-
 #| The original extended character set (29 more chars) after base62 to base91
 #| (from http://base91.sourceforge.net/):
 #|
@@ -95,25 +53,6 @@ our token base91 is export(:token-base91)           { ^ <[A..Za..z\d ! # $ % & (
 # 91 we provide a separate routine to return the integer and fractional
 # parts.
 
-our @base is export(:base) = [
-# bases 2-36: use Raku routines
-'0',
-'1',
-&base2,  &base3,  &base4,  &base5,  &base6,  &base7,  &base8,  &base9,
-&base10, &base11, &base12, &base13, &base14, &base15, &base16, &base17, &base18, &base19,
-&base20, &base21, &base22, &base23, &base24, &base25, &base26, &base27, &base28, &base29,
-&base30, &base31, &base32, &base33, &base34, &base35, &base36,
-
-# bases 37-91: use this module
-&base37, &base38, &base39,
-&base40, &base41, &base42, &base43, &base44, &base45, &base46,
-&base47, &base48, &base49, &base50, &base51, &base52, &base53,
-&base54, &base55, &base56, &base57, &base58, &base59, &base60,
-&base61, &base62, &base63, &base64, &base65, &base66, &base67, &base68, &base69, &base70,
-&base71, &base72, &base73, &base74, &base75, &base76, &base77, &base78, &base79, &base80,
-&base81, &base82, &base83, &base84, &base85, &base86, &base87, &base88, &base89, &base90,
-&base91
-];
 =end comment
 
 # Standard digit set for bases 2 through 91 (char 0 through 91).
@@ -159,19 +98,33 @@ our token base { ^ 2|8|10|16 $ }
 # as originally input:
 # may have a radix point; may be a string with base modifier (leading or trailing);
 # may have a leading sign
-has      $.number is required; 
-has      $.base;               # optional upon entry with base modifiers, 
-                               # must satisfy: 1 < base < 92
+has     $.number is required; 
+has     $.base;               # optional upon entry with base modifiers, 
+                              # must satisfy: 1 < base < 92
 
 # the decimal number resulting from the input
 has     $.decimal;
 
 # the pieces for use with bases > 36
-has Str $.sign-part = '';      # or '+' or '-'
-has Str $.integer-part = '';   # takes the sign, if any
-has Str $.fraction-part = '0'; # fractional part
+has Str $.sign     = '';      # or '+' or '-'
+has Str $.integer  = '';   # takes the sign, if any
+has Str $.fraction = '0';  # fractional part
+
+# create a local class for parsing the input line
+class PClass {
+    has $.number;
+    has $.base;
+    has $.decimal;
+    has $.sign;
+    has $.integer;
+    has $.fraction;
+}
 
 submethod TWEAK {
+    my PClass $p = parse-input :number($!number), :base($!base),
+                   :decimal($!decimal), :sign($!sign), :integer($!integer), 
+                   :fraction($!fraction);
+ 
     if $!number ~~ Str {
         # it must be a string repr of a valid base number
         my $s = "";
@@ -184,16 +137,16 @@ submethod TWEAK {
                          $/ {
             $!base = 2;
             if $0.defined {
-                $!sign-part = ~$0;
-                $s ~= $!sign-part;
+                $!sign = ~$0;
+                $s ~= $!sign;
             }
             if $1.defined {
-                $!integer-part = ~$1;
-                $s ~= $!integer-part;
+                $!integer = ~$1;
+                $s ~= $!integer;
             }
             if $2.defined {
-                $!fraction-part = ~$2;
-                $s ~= $!fraction-part;
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
             }
         }
         elsif $!number ~~ /^ (<[+-]>?) 0o (<[0..7]>+) 
@@ -204,16 +157,16 @@ submethod TWEAK {
                          $/ {
             $!base = 8;
             if $0.defined {
-                $!sign-part = ~$0;
-                $s ~= $!sign-part;
+                $!sign = ~$0;
+                $s ~= $!sign;
             }
             if $1.defined {
-                $!integer-part = ~$1;
-                $s ~= $!integer-part;
+                $!integer = ~$1;
+                $s ~= $!integer;
             }
             if $2.defined {
-                $!fraction-part = ~$2;
-                $s ~= $!fraction-part;
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
             }
         }
         elsif $!number ~~ /^ (<[+-]>?) 0d (<[0..9]>+) 
@@ -224,16 +177,16 @@ submethod TWEAK {
                          $/ {
             $!base = 10;
             if $0.defined {
-                $!sign-part = ~$0;
-                $s ~= $!sign-part;
+                $!sign = ~$0;
+                $s ~= $!sign;
             }
             if $1.defined {
-                $!integer-part = ~$1;
-                $s ~= $!integer-part;
+                $!integer = ~$1;
+                $s ~= $!integer;
             }
             if $2.defined {
-                $!fraction-part = ~$2;
-                $s ~= $!fraction-part;
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
             }
         }
         elsif $!number ~~ /^ :i (<[+-]>?) 0x (<[0..9a..f]>+) 
@@ -244,18 +197,25 @@ submethod TWEAK {
                          $/ {
             $!base = 16;
             if $0.defined {
-                $!sign-part = ~$0;
-                $s ~= $!sign-part;
+                $!sign = ~$0;
+                $s ~= $!sign;
             }
             if $1.defined {
-                $!integer-part = ~$1;
-                $s ~= $!integer-part;
+                $!integer = ~$1;
+                $s ~= $!integer;
             }
             if $2.defined {
-                $!fraction-part = ~$2;
-                $s ~= $!fraction-part;
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
             }
         }
+        elsif $!base.defined {
+            die "FATAL: need to handle number and base";
+        }
+        else {
+            die "FATAL: Unhandled \$number input: '$!number";
+        }
+
         =begin comment
         # trailing base indicator
         elsif $!number ~~ /^ :i (<[+-]>?) (.+) 
@@ -276,7 +236,6 @@ submethod TWEAK {
         note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
         exit;
     }
-
     
     =begin comment
     # shouldn't need this:
@@ -293,7 +252,7 @@ submethod TWEAK {
         die "FATAL: 'base' must be > 1 and < 92, input was '$!base'";
     }
     if 36 < $!base < 92 {
-        ($!integer-part, $!fraction-part) = self.to-base: $!number, :base($!base);
+        ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
     }
 }
 
@@ -1678,3 +1637,15 @@ sub create-base-set(
     }
     %h.Set;
 } # sub create-base-set(
+
+sub parse-input(
+    :$number,
+    :$base,
+    :$decimal;
+    :$sign;
+    :$integer;
+    :$fraction;
+    --> PClass
+    ) {
+}
+
