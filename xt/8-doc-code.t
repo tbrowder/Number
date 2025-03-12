@@ -7,22 +7,22 @@ my $debug = 0;
 # Tests code described in the docs
 
 =begin code
-use Number::More :ALL;
-my $bin = '11001011';   # do not enter any prefix
+use Number :ALL;
+my $bin = '-1100.1011';   # do not enter any prefix
 my $hex = bin2hex $bin;
-say $hex; # OUTPUT: 'CB'
+say $hex; # OUTPUT: '-C..B'
 =end code
 
 {
-use Number::More :ALL;
-my $bin = '11001011';   # do not enter any prefix
+use Number :ALL;
+my $bin = '-1100.1011';   # do not enter any prefix
 my $hex = bin2hex $bin;
-say $hex; # OUTPUT: 'CB'
-is $hex, 'CB';
+say $hex; # OUTPUT: '-C.B'
+is $hex, '-C.B';
 }
 
 =begin code
-my $bin = '11001011';
+my $bin = '-1100.1011';
 my $dec = parse-base $bin, 2;
 $dec = $bin.parse-base: 2;
 my $hex = $dec.base : 16;
