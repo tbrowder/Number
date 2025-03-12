@@ -1,4 +1,4 @@
-unit class Number;
+unit class Number does Numeric;
 
 my $DEBUG = 0;
 
@@ -13,14 +13,19 @@ our $dset = (0..9).Set;
 our $hset = "ABCDEFabcdef".comb.Set (|) $dset;
 
 # Define tokens for common regexes (no prefixes are allowed)
-my token binary is export(:token-binary)            { ^ <[01]>+ $ }
-my token octal is export(:token-octal)              { ^ <[0..7]>+ $ }
-my token decimal is export(:token-decimal)          { ^ \d+ $ } # actually an int
-my token hexadecimal is export(:token-hexadecimal)  { :i ^ <[a..f\d]>+ $ }
+# Must allow leading sign and optional radix point
+my token binary is export(:token-binary)            
+    { ^ <[+-]>? <[01]>+ [ '.' <[01]>+ ]? $ }
+my token octal is export(:token-octal)              
+    { ^ <[+-]>? <[0..7]>+ [ '.' <[0..7]>+ ]? $ }
+my token decimal is export(:token-decimal)          
+    { ^ <[+-]>? \d+ [ '.' \d+ ]? $ } 
+my token hexadecimal is export(:token-hexadecimal)  
+    { :i ^ <[+-]>? <[a..f\d]>+ [ '.' <[a..f\d]>+ ]? $ }
 
-# Note default Raku hex input handling is mixed case and upper-case
-# for output.  This module handles either input but hex input MUST be
-# either all upper or all lower case to preserve output.
+# Note default Raku hexadecimal input handling is mixed case and upper-case
+# for output.  This module handles either input but hexadecimal input MUST be
+# either all upper or all lower case to preserve proper output.
 
 # For general base specification functions 2..91
 our token all-bases is export(:token-all-bases)  { ^
@@ -150,18 +155,126 @@ our token base { ^ 2|8|10|16 $ }
 #=============================
 # class Number definition
 #=============================
-#class NumObj is export {
 
 # as originally input:
-has      $.number is required; # may have a radix point
-has      $.base   is required; # 1 < base < 92
+# may have a radix point; may be a string with base modifier (leading or trailing);
+# may have a leading sign
+has      $.number is required; 
+has      $.base;               # optional upon entry with base modifiers, 
+                               # must satisfy: 1 < base < 92
 
 # the decimal number resulting from the input
-has     $.sign;         # +1 or -1
-has     $.integer;      # may be negative
-has     $.fraction = 0; # fractional part
+has     $.decimal;
+
+# the pieces for use with bases > 36
+has     $.sign-part = '';      # or '+' or '-'
+has     $.integer-part = '';   # takes the sign, if any
+has     $.fraction-part = '0'; # fractional part
 
 submethod TWEAK {
+    if $!number ~~ Str {
+        # it must be a string repr of a valid base number
+        my $s = "";
+
+        if $!number ~~    /^ (<[+-]>?) 0b (<[01]>+) 
+                            # any fractional part
+                            [
+                              '.' (<[01]>+)
+                            ]? 
+                         $/ {
+            $!base = 2;
+            if $0.defined {
+                $!sign-part = ~$0;
+                $s ~= $!sign-part;
+            }
+            if $1.defined {
+                $!integer-part = ~$1;
+                $s ~= $!integer-part;
+            }
+            if $2.defined {
+                $!fraction-part = ~$2;
+                $s ~= $!fraction-part;
+            }
+        }
+        elsif $!number ~~ /^ (<[+-]>?) 0o (<[0..7]>+) 
+                            # any fractional part
+                            [
+                              '.' (<[0..7]>+)
+                            ]? 
+                         $/ {
+            $!base = 8;
+            if $0.defined {
+                $!sign-part = ~$0;
+                $s ~= $!sign-part;
+            }
+            if $1.defined {
+                $!integer-part = ~$1;
+                $s ~= $!integer-part;
+            }
+            if $2.defined {
+                $!fraction-part = ~$2;
+                $s ~= $!fraction-part;
+            }
+        }
+        elsif $!number ~~ /^ (<[+-]>?) 0d (<[0..9]>+) 
+                            # any fractional part
+                            [
+                              '.' (<[0..9]>+)
+                            ]? 
+                         $/ {
+            $!base = 10;
+            if $0.defined {
+                $!sign-part = ~$0;
+                $s ~= $!sign-part;
+            }
+            if $1.defined {
+                $!integer-part = ~$1;
+                $s ~= $!integer-part;
+            }
+            if $2.defined {
+                $!fraction-part = ~$2;
+                $s ~= $!fraction-part;
+            }
+        }
+        elsif $!number ~~ /^ :i (<[+-]>?) 0x (<[0..9a..f]>+) 
+                            # any fractional part
+                            [
+                              '.' (<[0..9a..f]>+)
+                            ]? 
+                         $/ {
+            $!base = 16;
+            if $0.defined {
+                $!sign-part = ~$0;
+                $s ~= $!sign-part;
+            }
+            if $1.defined {
+                $!integer-part = ~$1;
+                $s ~= $!integer-part;
+            }
+            if $2.defined {
+                $!fraction-part = ~$2;
+                $s ~= $!fraction-part;
+            }
+        }
+        =begin comment
+        # trailing base indicator
+        elsif $!number ~~ /^ :i (<[+-]>?) (.+) 
+                            # any fractional part
+                            # trailing indicator
+                         $/ {
+        }
+        # leading base indicator
+        elsif $!number ~~ // {
+        }
+        =end comment
+
+        # convert to the decimal value
+        $!decimal = $s.parse-base: $!base;
+        
+    }
+    
+    =begin comment
+    # shouldn't need this:
     if $!number < 0 {
         $!sign     = -1;
         $!integer *= -1;
@@ -169,10 +282,14 @@ submethod TWEAK {
     else {
         $!sign     = +1;
     }
+    =end comment
+
     unless 1 < $!base < 92 {
         die "FATAL: 'base' must be > 1 and < 92, input was '$!base'";
     }
-    ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
+    if 36 < $!base < 92 {
+        ($!integer-part, $!fraction-part) = self.to-base: $!number, :base($!base);
+    }
 }
 
 # Methods
