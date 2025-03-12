@@ -4,6 +4,7 @@ my $DEBUG = 0;
 
 my $LH = %*ENV<LENGTH_HANDLING>:exists ??
          %*ENV<LENGTH_HANDLING> !! 'ignore'; # other options: 'warn', 'fail'
+
 my token length-action { ^ :i warn|fail $ }
 
 our $bset = "01".comb.Set;
@@ -28,12 +29,12 @@ our token all-bases is export(:token-all-bases)  { ^
                                                    9 <[01]>
                                                  $ }
 
+=begin comment
 our $base63 is export(:base63) = 
             ( 0..9, "A".."Z", "a".."z", '!' ).join; # case-sensitive
 our $base64 is export(:base64) = 
             ( 0..9, "A".."Z", "a".."z", '!'..'#' ).join; # case-sensitive
 
-=begin comment
 # extended to base 91
 our token base63 is export(:token-base63)           { ^ <[A..Za..z\d ! ]>+ $ }  # case-sensitive, multiple chars
 our token base64 is export(:token-base64)           { ^ <[A..Za..z\d ! # ]>+ $ }  # case-sensitive, multiple chars

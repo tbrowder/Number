@@ -8,7 +8,23 @@ unit module Helpers;
 # we do NOT write any tests that are expected to fail (such as using :prefix
 # and :suffix at the same time
 
+sub write-test-rebase(
+    # this writes tests for sub rebase
+    $num,
+    :$bi where ( $bi ~~ /2|8|10|16/ ), 
+    :$bo where ( $bo ~~ /2|8|10|16/ ), 
+    :$fh,
+    # optional arguments
+    :$nl is copy, # just for separating groups of tests
+    :$length is copy,
+    :$prefix is copy,
+    :$suffix is copy,
+    :lower-case(:lc(:$LC)) is copy,
+    ) is export {
+)
+
 sub write-test-base(
+    # this writes tests the family of subs X2Y (e.g., bin2oct)
     $num,
     :$bi where ( $bi ~~ /2|8|10|16/ ), 
     :$bo where ( $bo ~~ /2|8|10|16/ ), 

@@ -11,7 +11,7 @@ $fh.print: q:to/HERE/;
 # See ./create-tests.raku for the generating source
 
 use Test;
-use Number::More :ALL;
+use Number :ALL;
 
 #plan 97;
 

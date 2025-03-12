@@ -3,7 +3,7 @@
 use lib "./t";
 use Helpers;
 
-my $ofil = "./t/11-real-num-tests.t";
+my $ofil = "./t/11-real-number-tests.t";
 my $fh = open $ofil, :w;
 
 $fh.print: q:to/HERE/;
@@ -11,7 +11,7 @@ $fh.print: q:to/HERE/;
 # See ./make-real-number-tests.raku for the generating source
 
 use Test;
-use Number::More :ALL;
+use Number :ALL;
 
 #plan 97;
 
@@ -19,9 +19,9 @@ my $r; # exe results to test
 my $length = 20; 
 HERE
 
-my @bases-i = 2, 8, 10, 16;
+my @bases-i = 2..36;
 my @bases-o = @bases-i;
-my $num = "1";
+my $num = "500";
 my $length = 4;
 my $r;
 
