@@ -14,13 +14,13 @@ our $hset = "ABCDEFabcdef".comb.Set (|) $dset;
 
 # Define tokens for common regexes (no prefixes are allowed)
 # Must allow leading sign and optional radix point
-my token binary is export(:token-binary)            
+my token binary is export(:token-binary)
     { ^ <[+-]>? <[01]>+ [ '.' <[01]>+ ]? $ }
-my token octal is export(:token-octal)              
+my token octal is export(:token-octal)
     { ^ <[+-]>? <[0..7]>+ [ '.' <[0..7]>+ ]? $ }
-my token decimal is export(:token-decimal)          
-    { ^ <[+-]>? \d+ [ '.' \d+ ]? $ } 
-my token hexadecimal is export(:token-hexadecimal)  
+my token decimal is export(:token-decimal)
+    { ^ <[+-]>? \d+ [ '.' \d+ ]? $ }
+my token hexadecimal is export(:token-hexadecimal)
     { :i ^ <[+-]>? <[a..f\d]>+ [ '.' <[a..f\d]>+ ]? $ }
 
 # Note default Raku hexadecimal input handling is mixed case and upper-case
@@ -98,8 +98,8 @@ our token base { ^ 2|8|10|16 $ }
 # as originally input:
 # may have a radix point; may be a string with base modifier (leading or trailing);
 # may have a leading sign
-has     $.number is required; 
-has     $.base;               # optional upon entry with base modifiers, 
+has     $.number is required;
+has     $.base;               # optional upon entry with base modifiers,
                               # must satisfy: 1 < base < 92
 
 # the decimal number resulting from the input
@@ -122,121 +122,9 @@ class PClass {
 
 submethod TWEAK {
     my PClass $p = parse-input :number($!number), :base($!base),
-                   :decimal($!decimal), :sign($!sign), :integer($!integer), 
+                   :decimal($!decimal), :sign($!sign), :integer($!integer),
                    :fraction($!fraction);
- 
-    if $!number ~~ Str {
-        # it must be a string repr of a valid base number
-        my $s = "";
 
-        if $!number ~~    /^ (<[+-]>?) 0b (<[01]>+) 
-                            # any fractional part
-                            [
-                              '.' (<[01]>+)
-                            ]? 
-                         $/ {
-            $!base = 2;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ (<[+-]>?) 0o (<[0..7]>+) 
-                            # any fractional part
-                            [
-                              '.' (<[0..7]>+)
-                            ]? 
-                         $/ {
-            $!base = 8;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ (<[+-]>?) 0d (<[0..9]>+) 
-                            # any fractional part
-                            [
-                              '.' (<[0..9]>+)
-                            ]? 
-                         $/ {
-            $!base = 10;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ :i (<[+-]>?) 0x (<[0..9a..f]>+) 
-                            # any fractional part
-                            [
-                              '.' (<[0..9a..f]>+)
-                            ]? 
-                         $/ {
-            $!base = 16;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!base.defined {
-            die "FATAL: need to handle number and base";
-        }
-        else {
-            die "FATAL: Unhandled \$number input: '$!number";
-        }
-
-        =begin comment
-        # trailing base indicator
-        elsif $!number ~~ /^ :i (<[+-]>?) (.+) 
-                            # any fractional part
-                            # trailing indicator
-                         $/ {
-        }
-        # leading base indicator
-        elsif $!number ~~ // {
-        }
-        =end comment
-
-        # convert to the decimal value
-        $!decimal = $s.parse-base: $!base;
-        
-    }
-    else {
-        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
-        exit;
-    }
-    
     =begin comment
     # shouldn't need this:
     if $!number < 0 {
@@ -905,7 +793,7 @@ sub oct2hex(
 # Params  : Octal number (string), desired length (optional), suffix (optional).
 # Returns : Decimal number (or string).
 sub oct2dec(
-    $oct where &octal, 
+    $oct where &octal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -1006,7 +894,7 @@ sub dec2oct(
 # Params  : Hexadecimal number (string), desired length (optional), prefix (optional), suffix (optional).
 # Returns : Octal number (string).
 sub hex2oct(
-    $hex where &hexadecimal, 
+    $hex where &hexadecimal,
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,
@@ -1243,7 +1131,7 @@ bunch more examples and they should get easier.
     my $place = $num.chars;
 
     my $dec = 0;
-    
+
     for @num'r -> $char  {
 	--$place; # first place is num chars - 1
         if $char ~~ /:i z/ {
@@ -1647,5 +1535,152 @@ sub parse-input(
     :$fraction;
     --> PClass
     ) {
-}
 
+    if $!number ~~ Str {
+        # it must be a string repr of a valid base number
+        my $s = "";
+
+        if $!number ~~    /^ (<[+-]>?) 0b (<[01]>+)
+                            # any fractional part
+                            [
+                              '.' (<[01]>+)
+                            ]?
+                         $/ {
+            $!base = 2;
+            if $0.defined {
+                $!sign = ~$0;
+                $s ~= $!sign;
+            }
+            if $1.defined {
+                $!integer = ~$1;
+                $s ~= $!integer;
+            }
+            if $2.defined {
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
+            }
+        }
+        elsif $!number ~~ /^ (<[+-]>?) 0o (<[0..7]>+)
+                            # any fractional part
+                            [
+                              '.' (<[0..7]>+)
+                            ]?
+                         $/ {
+            $!base = 8;
+            if $0.defined {
+                $!sign = ~$0;
+                $s ~= $!sign;
+            }
+            if $1.defined {
+                $!integer = ~$1;
+                $s ~= $!integer;
+            }
+            if $2.defined {
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
+            }
+        }
+        elsif $!number ~~ /^ (<[+-]>?) 0d (<[0..9]>+)
+                            # any fractional part
+                            [
+                              '.' (<[0..9]>+)
+                            ]?
+                         $/ {
+            $!base = 10;
+            if $0.defined {
+                $!sign = ~$0;
+                $s ~= $!sign;
+            }
+            if $1.defined {
+                $!integer = ~$1;
+                $s ~= $!integer;
+            }
+            if $2.defined {
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
+            }
+        }
+        elsif $!number ~~ /^ :i (<[+-]>?) 0x (<[0..9a..f]>+)
+                            # any fractional part
+                            [
+                              '.' (<[0..9a..f]>+)
+                            ]?
+                         $/ {
+            $!base = 16;
+            if $0.defined {
+                $!sign = ~$0;
+                $s ~= $!sign;
+            }
+            if $1.defined {
+                $!integer = ~$1;
+                $s ~= $!integer;
+            }
+            if $2.defined {
+                $!fraction = ~$2;
+                $s ~= ".{$!fraction}";
+            }
+        }
+        # trailing subscript chars in the $number string
+        elsif $number ~~ /^  (<[+-]>)?                       # 0
+                             (<[0..9a..zA..Z]>+)             # 1 # expand to base 91
+                             [ '.' (<[0..9a..zA..Z]>+) ]?    # 2 # expand to base 91
+                             # trailing modifiers:
+                             (<[ \x[2081] .. \x[2089] ]>)    # 3
+                             [(<[ \x[2080] .. \x[2089] ]>)]? # 4
+                         $/ {
+            my $s = "";
+            my $base = "";
+            if $0.defined {
+                # sign
+                $s ~= ~$0;
+            }
+            if $1.defined {
+                # integer part
+                $s ~= ~$1;
+            }
+            if $2.defined {
+                # fraction part
+                $s ~= '.';
+                $s ~= ~$2;
+            }
+            if $3.defined {
+                # first base digit
+# get digit     $base ~= ~$3;
+            }
+            if $4.defined {
+                # second base digit
+# get digit     $base ~= ~$4;
+            }
+        }
+        # subscript chars in the $number string
+        elsif $number ~~ /^ <[ \x[2080] .. \x[2089] ]> ','  
+                         $/ {
+        }
+        elsif $!base.defined {
+            die "FATAL: need to handle number and base";
+        }
+        else {
+            die "FATAL: Unhandled \$number input: '$!number";
+        }
+
+        =begin comment
+        # trailing base indicator
+        elsif $!number ~~ /^ :i (<[+-]>?) (.+)
+                            # any fractional part
+                            # trailing indicator
+                         $/ {
+        }
+        # leading base indicator
+        elsif $!number ~~ // {
+        }
+        =end comment
+
+        # convert to the decimal value
+        $!decimal = $s.parse-base: $!base;
+
+    }
+    else {
+        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
+        exit;
+    }
+}
