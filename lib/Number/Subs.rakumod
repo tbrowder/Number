@@ -46,7 +46,9 @@ sub parse-input(
         # trailing modifiers (cannot have both leading and training
         # modifiers)
         elsif $num ~~ /^
-                         (<-[ \x[2080] .. \x[2089] ]>+) # all chars other than prefix modifiers
+                         # accepting all chars other than prefix modifiers
+                         (<-[ \x[2080] .. \x[2089] ]>+) 
+                         # trailing suffix modifiers, if any
                          ( <[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
                      $/ {
             $num    = ~$0;
@@ -57,8 +59,11 @@ sub parse-input(
         #==============================
 
         # any fractional parts
-        if $num ~~ /^ (<-[.]>) # all chars before the radix point
-                      ['.' (.+)]?  # all after, if any                              '.' (<[01]>+)
+        if $num ~~ /^ 
+                      # extracte all chars before the radix point
+                      (<-[.]>) 
+                      # and all after, if any
+                      ['.' (.+)]?  
                       $/ {
             $num  = ~$0;
             $num ~= ~$1 if $1.defined;
@@ -69,10 +74,9 @@ sub parse-input(
         note "DEBUG TWEAK: Tom fix for this input for \$number: |$number|";
         exit;
     }
-
 }
 
-# from core.c:    multi method parse-base(Str:D: Int:D $radix --> Numeric:D) {
+# from core.c: multi method parse-base(Str:D: Int:D $radix --> Numeric:D) {
 sub parse-base2(
     Str:D $num is copy,
     $base is copy, #  where ( 2 <= $base <= 91 ),
@@ -80,7 +84,7 @@ sub parse-base2(
     --> Numeric:D
 ) is export(:parse-base2) {
 
-    # the input string may have embedded base modifiers in multiple
+    # The input string may have embedded base modifiers in multiple
     # formats:
     my Real $dec;
 

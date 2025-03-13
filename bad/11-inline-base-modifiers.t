@@ -25,17 +25,16 @@ my $e = "-\x2081\x2081,10.1";
 my $f = "-\x[2081]\x[2081]10.1";
 
 my $r = -11.090909; # result from raku: $X.parse-base: 11
-#my $r = "-11.090909"; # result from raku: $X.parse-base: 11
 
 my $base;
 my $r2 = parse-base2 $A, $base;
 is $r2, $r;
 
+$r2 = parse-base2 $a, $base;
+is $r2, $r;
+
 done-testing;
 =finish
-
-my $r2 = parse-base2 $a, $base;
-is $r2, $r;
 
 $r2 = parse-base2 $b;
 is $r2, $r;
