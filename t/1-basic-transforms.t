@@ -1,6 +1,7 @@
 use Test;
 
 use Number :ALL;
+use Number::Subs :ALL;
 
 my $debug = 0;
 

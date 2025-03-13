@@ -2,6 +2,8 @@ use Test;
 
 use Number :ALL;
 
-plan 1;
+plan 3;
 
 isa-ok Number, Number;
+isa-ok Number::Subs, Number::Subs;
+isa-ok Number::Vars, Number::Vars;

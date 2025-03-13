@@ -3,6 +3,7 @@ use Test;
 use UUID::V4;
 
 use Number :ALL;
+use Number::Subs :ALL;
 
 my $hex = "ffffffffffffffffffffffffffffffff";
 is $hex.chars, 32;

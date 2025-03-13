@@ -15,7 +15,9 @@
   "perl": "6.*",
   "provides": {
     "Copy-of-More": "lib/Copy-of-More.rakumod",
-    "Number": "lib/Number.rakumod"
+    "Number": "lib/Number.rakumod",
+    "Number::Subs": "lib/Number/Subs.rakumod",
+    "Number::Vars": "lib/Number/Vars.rakumod"
   },
   "resources": [
   ],

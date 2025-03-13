@@ -1,5 +1,8 @@
 unit class Number does Numeric;
 
+use Number::Subs;
+use Number::Vars;
+
 my $DEBUG = 0;
 
 my $LH = %*ENV<LENGTH_HANDLING>:exists ??
@@ -28,32 +31,30 @@ my token hexadecimal is export(:token-hexadecimal)
 # either all upper or all lower case to preserve proper output.
 
 # For general base specification functions 2..91
-our token all-bases is export(:token-all-bases)  { ^
-                                                   <[2..9]> |
-                                                   <[1..8]><[0..9]> |
-                                                   9 <[01]>
-                                                 $ }
+our token all-bases is export(:token-all-bases)
+    { ^
+        <[2..9]> |          #  2..9
+        <[1..8]><[0..9]> |  # 10..89
+        9 <[01]>            # 90..91
+    $ }
 
-=begin comment
-#| The original extended character set (29 more chars) after base62 to base91
-#| (from http://base91.sourceforge.net/):
+#| The original extended character set (29 more chars) after base62 to
+#| base91 (from http://base91.sourceforge.net/):
 #|
 #|                   1                   2
 #| 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
 #| ! # $ % & ( ) * + , . / : ; < = > ? @ [ ] ^ _ ` { | } ~ "
-
-#| In order to use the period as the radix point for fractions
-#| we swap the period and the double quotation mark.
-
+#|
+#| In order to use the period as the radix point for fractions we swap
+#| the period and the double quotation mark.
+#|
 #|                   1                   2
 #| 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
 #| ! # $ % & ( ) * + , " / : ; < = > ? @ [ ] ^ _ ` { | } ~ .
-
-# Then, for bases 2 through 90 the radix point is the period. For base
-# 91 we provide a separate routine to return the integer and fractional
-# parts.
-
-=end comment
+#|
+#| Then, for bases 2 through 90 the radix point is the period. For
+#| base 91 we provide a separate routine to return the integer and
+#| fractional parts.
 
 # Standard digit set for bases 2 through 91 (char 0 through 91).
 # The array of digits is indexed by their decimal value.
@@ -69,25 +70,21 @@ our @dec2digit is export(:dec2digit) = [
     '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', # 90
     '.',                                              # 91
     ];
-
 # Standard digit set for bases 2 through 91 (char 0 through 91).
 # The hash is comprised of digit keys and their decimal value.
 our %digit2dec is export(:digit2dec) = @dec2digit.antipairs;
 
-=begin comment
-our %digit2dec is export(:digit2dec) = %(
-    '0' =>  0, '1' =>  1, '2' =>  2, '3' =>  3, '4' =>  4, '5' =>  5, '6' =>  6, '7' =>  7, '8' =>  8, '9' =>  9, # 10
-    'A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14, 'F' => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, # 20
-    'K' => 20, 'L' => 21, 'M' => 22, 'N' => 23, 'O' => 24, 'P' => 25, 'Q' => 26, 'R' => 27, 'S' => 28, 'T' => 29, # 30
-    'U' => 30, 'V' => 31, 'W' => 32, 'X' => 33, 'Y' => 34, 'Z' => 35, 'a' => 36, 'b' => 37, 'c' => 38, 'd' => 39, # 40
-    'e' => 40, 'f' => 41, 'g' => 42, 'h' => 43, 'i' => 44, 'j' => 45, 'k' => 46, 'l' => 47, 'm' => 48, 'n' => 49, # 50
-    'o' => 50, 'p' => 51, 'q' => 52, 'r' => 53, 's' => 54, 't' => 55, 'u' => 56, 'v' => 57, 'w' => 58, 'x' => 59, # 60
-    'y' => 60, 'z' => 61, '!' => 62, '#' => 63, '$' => 64, '%' => 65, '&' => 66, '(' => 67, ')' => 68, '*' => 69, # 70
-    '+' => 70, ',' => 71, '"' => 72, '/' => 73, ':' => 74, ';' => 75, '<' => 76, '=' => 77, '>' => 78, '?' => 79, # 80
-    '@' => 80, '[' => 81, ']' => 82, '^' => 83, '_' => 84, '`' => 85, '{' => 86, '|' => 87, '}' => 88, '~' => 89, # 90
-    '.' => 90,                                                                                                    # 91
-);
-=end comment
+# hash digit2dec contents:
+# '0' =>  0, '1' =>  1, '2' =>  2, '3' =>  3, '4' =>  4, '5' =>  5, '6' =>  6, '7' =>  7, '8' =>  8, '9' =>  9, # 10
+# 'A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14, 'F' => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, # 20
+# 'K' => 20, 'L' => 21, 'M' => 22, 'N' => 23, 'O' => 24, 'P' => 25, 'Q' => 26, 'R' => 27, 'S' => 28, 'T' => 29, # 30
+# 'U' => 30, 'V' => 31, 'W' => 32, 'X' => 33, 'Y' => 34, 'Z' => 35, 'a' => 36, 'b' => 37, 'c' => 38, 'd' => 39, # 40
+# 'e' => 40, 'f' => 41, 'g' => 42, 'h' => 43, 'i' => 44, 'j' => 45, 'k' => 46, 'l' => 47, 'm' => 48, 'n' => 49, # 50
+# 'o' => 50, 'p' => 51, 'q' => 52, 'r' => 53, 's' => 54, 't' => 55, 'u' => 56, 'v' => 57, 'w' => 58, 'x' => 59, # 60
+# 'y' => 60, 'z' => 61, '!' => 62, '#' => 63, '$' => 64, '%' => 65, '&' => 66, '(' => 67, ')' => 68, '*' => 69, # 70
+# '+' => 70, ',' => 71, '"' => 72, '/' => 73, ':' => 74, ';' => 75, '<' => 76, '=' => 77, '>' => 78, '?' => 79, # 80
+# '@' => 80, '[' => 81, ']' => 82, '^' => 83, '_' => 84, '`' => 85, '{' => 86, '|' => 87, '}' => 88, '~' => 89, # 90
+# '.' => 90,                                                                                                    # 91
 
 our token base { ^ 2|8|10|16 $ }
 
@@ -99,49 +96,33 @@ our token base { ^ 2|8|10|16 $ }
 # may have a radix point; may be a string with base modifier (leading or trailing);
 # may have a leading sign
 has     $.number is required;
-has     $.base;               # optional upon entry with base modifiers,
-                              # must satisfy: 1 < base < 92
+has     $.base;  # optional upon entry with base modifiers,
+                 # must satisfy: 2 <= $base <= 91
 
 # the decimal number resulting from the input
 has     $.decimal;
 
 # the pieces for use with bases > 36
 has Str $.sign     = '';      # or '+' or '-'
-has Str $.integer  = '';   # takes the sign, if any
-has Str $.fraction = '0';  # fractional part
-
-# create a local class for parsing the input line
-class PClass {
-    has $.number;
-    has $.base;
-    has $.decimal;
-    has $.sign;
-    has $.integer;
-    has $.fraction;
-}
+has Str $.integer  = '';  # takes the sign, if any
+has Str $.fraction = '';  # any fractional part
 
 submethod TWEAK {
-    my PClass $p = parse-input :number($!number), :base($!base),
-                   :decimal($!decimal), :sign($!sign), :integer($!integer),
-                   :fraction($!fraction);
 
-    =begin comment
-    # shouldn't need this:
-    if $!number < 0 {
-        $!sign     = -1;
-        $!integer *= -1;
+    if $!base.defined {
+        unless 2 <= $!base <= 91 {
+            die "FATAL: 'base' must be >= 2 and <= 91, input was '$!base'";
+        }
+        if 37 <= $!base <= 91 {
+            ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
+        }
     }
-    else {
-        $!sign     = +1;
-    }
-    =end comment
 
-    unless 1 < $!base < 92 {
-        die "FATAL: 'base' must be > 1 and < 92, input was '$!base'";
-    }
-    if 36 < $!base < 92 {
-        ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
-    }
+
+
+
+
+
 }
 
 # Methods
@@ -1400,8 +1381,8 @@ sub str2num(
     $dec;
 } # str2num
 
-# This version looks excellent for the integer part!
-# was from-dec-to-b37-b91
+# This version looks excellent for the integer part!  was
+# from-dec-to-b37-b91
 multi sub UInt2numstr(
     UInt:D $dec,
     $base where (36 < $base < 92),
@@ -1470,217 +1451,3 @@ sub num2str(
     return $x'b;
 } # num2str
 =end comment
-
-sub create-set(
-    $text,
-    :$debug,
-    --> Set
-    ) is export {
-
-    my @chars = $text.comb.unique;
-    my %h;
-    for @chars {
-        %h{$_} = True;
-    }
-    %h.Set;
-} # sub create-set(
-
-sub create-base-set(
-    UInt $base where ( 1 < $base < 92 ),
-    :$debug,
-    --> Set
-    ) is export {
-
-    my $first-char-idx = 0;
-    my $F = $first-char-idx;
-    my $first-char = @dec2digit[$first-char-idx];
-    my $FC = $first-char;
-
-    my $last-char-idx  = $base - 1;
-    my $L = $last-char-idx;
-
-    my $last-char = @dec2digit[$last-char-idx];
-    my $LC = $last-char;
-
-    my $chars = @dec2digit[$F..$L].join;
-
-    # if the base is < 37 (letter case insensitive)
-    if $base < 37 {
-        # add the lower-case letters
-        $chars ~= $chars.lc;
-    }
-
-    if 0 or $debug {
-        say "DEBUG base $base, first char is char index $F, char '$FC'";
-        say "                   last char is char index $L, char '$LC'";
-        say "All chars:";
-        say $chars;
-        #say "DEBUG exit";exit;
-    }
-
-    my %h;
-    for $chars.comb -> $c is copy {
-        $c .= Str;
-        %h{$c} = True;
-    }
-    %h.Set;
-} # sub create-base-set(
-
-sub parse-input(
-    :$number,
-    :$base,
-    :$decimal;
-    :$sign;
-    :$integer;
-    :$fraction;
-    --> PClass
-    ) {
-
-    if $!number ~~ Str {
-        # it must be a string repr of a valid base number
-        my $s = "";
-
-        if $!number ~~    /^ (<[+-]>?) 0b (<[01]>+)
-                            # any fractional part
-                            [
-                              '.' (<[01]>+)
-                            ]?
-                         $/ {
-            $!base = 2;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ (<[+-]>?) 0o (<[0..7]>+)
-                            # any fractional part
-                            [
-                              '.' (<[0..7]>+)
-                            ]?
-                         $/ {
-            $!base = 8;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ (<[+-]>?) 0d (<[0..9]>+)
-                            # any fractional part
-                            [
-                              '.' (<[0..9]>+)
-                            ]?
-                         $/ {
-            $!base = 10;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        elsif $!number ~~ /^ :i (<[+-]>?) 0x (<[0..9a..f]>+)
-                            # any fractional part
-                            [
-                              '.' (<[0..9a..f]>+)
-                            ]?
-                         $/ {
-            $!base = 16;
-            if $0.defined {
-                $!sign = ~$0;
-                $s ~= $!sign;
-            }
-            if $1.defined {
-                $!integer = ~$1;
-                $s ~= $!integer;
-            }
-            if $2.defined {
-                $!fraction = ~$2;
-                $s ~= ".{$!fraction}";
-            }
-        }
-        # trailing subscript chars in the $number string
-        elsif $number ~~ /^  (<[+-]>)?                       # 0
-                             (<[0..9a..zA..Z]>+)             # 1 # expand to base 91
-                             [ '.' (<[0..9a..zA..Z]>+) ]?    # 2 # expand to base 91
-                             # trailing modifiers:
-                             (<[ \x[2081] .. \x[2089] ]>)    # 3
-                             [(<[ \x[2080] .. \x[2089] ]>)]? # 4
-                         $/ {
-            my $s = "";
-            my $base = "";
-            if $0.defined {
-                # sign
-                $s ~= ~$0;
-            }
-            if $1.defined {
-                # integer part
-                $s ~= ~$1;
-            }
-            if $2.defined {
-                # fraction part
-                $s ~= '.';
-                $s ~= ~$2;
-            }
-            if $3.defined {
-                # first base digit
-# get digit     $base ~= ~$3;
-            }
-            if $4.defined {
-                # second base digit
-# get digit     $base ~= ~$4;
-            }
-        }
-        # subscript chars in the $number string
-        elsif $number ~~ /^ <[ \x[2080] .. \x[2089] ]> ','  
-                         $/ {
-        }
-        elsif $!base.defined {
-            die "FATAL: need to handle number and base";
-        }
-        else {
-            die "FATAL: Unhandled \$number input: '$!number";
-        }
-
-        =begin comment
-        # trailing base indicator
-        elsif $!number ~~ /^ :i (<[+-]>?) (.+)
-                            # any fractional part
-                            # trailing indicator
-                         $/ {
-        }
-        # leading base indicator
-        elsif $!number ~~ // {
-        }
-        =end comment
-
-        # convert to the decimal value
-        $!decimal = $s.parse-base: $!base;
-
-    }
-    else {
-        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
-        exit;
-    }
-}
