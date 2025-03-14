@@ -15,13 +15,29 @@ use Number;
 DESCRIPTION
 ===========
 
-The Number class allows conversion between numbers of differing bases and common mathematical operations on them. Real number operations on bases 2 through 36 are provided using Raku core routines. CAUTION: Real number handling on bases 37 to 91 is more limited and should be treated as experimental.
+The Number package allows conversion between numbers of differing bases and provides common mathematical operations on them. Real number operations on bases 2 through 36 are provided using Raku core routines. Real number handling on bases 37 to 91 is provided by routines derived from other sources.
 
-Also provided are some convenience functions to convert unsigned integers between different, commonly used number bases: decimal, hexadecimal, octal, and binary.
+Also provided are some convenience functions to convert between different, commonly used number bases: decimal, hexadecimal, octal, and binary.
+
+class Number does Numeric {...}
+-------------------------------
+
+The `Number` class extends Raku's `Numeric` class to provide some additional contruction methods from embedded trailing or leading base modifiers without explicitly entering a separate `$base` argument. It also provides some additional methods to enable mixed base operations with other `Number` instances.
+
+All new instances create their decimal value upon construction, and that value is immutable for the object's lifetime.
+
+The class instance also keeps its original base number value, but that can be changed later by the user.
+
+Subroutines
+-----------
 
 For completeness, this module's routines converts between bases 2 through 91. The advantage of the highest base conversion is that much more compression is available than when encoding binary data with ASCII characters.
 
-Note that bases greater than 36 will use digits consisting of a case-sensitive set of ASCII characters in an array indexed from 0..base-1, and the reverse mapping is in a hash. Both exported variables are shown below as well in [NUMBERS](./docs/NUMBERS.md). Also included in that document is more information on other exported variables, number systems (and references), and their use in this module.
+The default for outputs is to use upper-case ASCII alphabetic characters for the non-decimal results and all bases greater than 10 and less than 37. Non-decimal inputs are not case-sensitive for bases less than 37.
+
+Bases greater than 36 use a mixture of upper-case and lower-case ASCII alphabetic characters ls well as other ASCII characters for non-decimal characters.
+
+The set of usable characters for all bases up to 91 is defined in an array indexed from 0..base-1, and the reverse mapping is in a hash. Both exported variables are shown below as well in [NUMBERS](./docs/NUMBERS.md). Also included in that document is more information on other exported variables, number systems (and references), and their use in this module.
 
 The current subroutines are described in detail in [SUBS](./docs/SUBS.md) which shows a short description of each exported routine along along with its complete signature.
 
@@ -29,36 +45,39 @@ The functions in this module are recommended for users who don't want to have to
 
 As an example of the detail involved, any transformation from a non-decimal base to another non-decimal base requires an intermediate step to convert the first non-decimal number to decimal, and then convert the decimal number to the final desired base. In addition, adding prefixes, changing to lower-case where appropriate, increasing lengths, and handling fractions will involve more processing.
 
-The following illustrates the process using Raku routines for the example above:
+The following illustrates the process using Raku routines for that process:
 
     my $bin = '-1100.1011';
     my $dec = $bin.parse-base: 2;
-    say $dec; # OUTPUT: «203␤»
-
+    say $dec; # OUTPUT: «-12.6875␤»
     my $hex = $dec.base: 16;
-    say $hex; # OUTPUT «CB␤»
+    say $hex; # OUTPUT «-C.B␤»
 
-The default for each provided function is to take a string (valid decimals may be entered as numbers) representing a valid number in one base and transform it into the desired base with no leading zeroes or descriptive prefix (such as '0b', '0o', '0d', and '0x') to indicate the type of number. The default is to use upper-case characters for the hexadecimal results and all bases greater than 10 and less than 37. Bases greater than 36 use a mixture of upper-case and lower-case characters.
+Using this module's routine eases the conversion,
 
-One can add optional named parameters to provide output formatting features suitable for incuding the values in text:
+    my $bin = '-1100.1011';
+    my $hex = bin2hex $bin;
+    say $hex; # OUTPUT «-C.B␤»
 
-TODO FIX THIS 
+The default for each provided X2Y function is to take a string (valid decimals may be entered as numbers) representing a valid number in one base and transform it into the desired base without leading zeroes or descriptive prefix (such as '0b', '0o', '0d', or '0x') to indicate the type of number. 
 
-  * :prefix
+One can add optional named parameters to provide output formatting features suitable for including the values in text:
 
-  * :suffix
+TODO add text to describe use of items FIX THIS 
 
-  * :length
+### :prefix
 
-  * :LC
+### :LC
 
-  * :lc (alias for :LC)
+### :lc (alias for :LC)
 
-  * :lower-case (alias for :LC)
+### :lower-case (alias for :LC)
 
 ### :length
 
-There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). There are named parameters to have results in suitable form including in text: lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), 10 (decimal), and 16 (hecadecimal). Examples of each:
+There is an optional parameter to define desired lengths of results (which will result in adding leading zeroes if needed). 
+
+There are named parameters to have results in suitable form including in text: lower-case (`:$LC`) for bases between 11 and 36 and add appropriate prefixes to transformed numbers (`:$prefix`) in bases 2 (binary), 8 (octal), 10 (decimal), and 16 (hecadecimal). Examples of each:
 
     0b11001      # binary
     0o11001      # octal
