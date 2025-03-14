@@ -95,15 +95,15 @@ our token base { ^ 2|8|10|16 $ }
 # as originally input:
 # may have a radix point; may be a string with base modifier (leading or trailing);
 # may have a leading sign
-has     $.number is required;
-has     $.base;  # optional upon entry with base modifiers,
-                 # must satisfy: 2 <= $base <= 91
+has     $.number is rw is required;
+has     $.base is rw;  # optional upon entry when using valid base modifiers,
+                       # must satisfy: 2 <= $base <= 91
 
-# the decimal number resulting from the input
-has     $.decimal;
+# the decimal number resulting from the input (immutable)
+has     $.decimal;     # immutable
 
 # the pieces for use with bases > 36
-has Str $.sign     = '';      # or '+' or '-'
+has Str $.sign     = '';  # or '+' or '-'
 has Str $.integer  = '';  # takes the sign, if any
 has Str $.fraction = '';  # any fractional part
 
@@ -117,12 +117,7 @@ submethod TWEAK {
             ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
         }
     }
-
-
-
-
-
-
+    note  "WARNING: Please add special, embedded base handling in Number.rakumod";
 }
 
 # Methods

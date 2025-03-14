@@ -29,18 +29,19 @@ sub parse-input(
         # extract any leading or trailing modifiers (can have only one
         # type or the other) leading modifiers
         #=============================================================
+        # leading modifiers
         if $num ~~ /^
                       (0 <[bodx]>)?
                       (.+)
                    $/ {
-            $prefix = ~$0;
+            $prefix = ~$0 if $0.defined;
             $num    = ~$1;
         }
         elsif $num ~~ /^
                       (<[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
                       (.+)
                    $/ {
-            $prefix = ~$0;
+            $prefix = ~$0 if $0.defined;
             $num    = ~$1;
         }
         # trailing modifiers (cannot have both leading and training
