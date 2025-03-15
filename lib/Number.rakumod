@@ -2,6 +2,7 @@ unit class Number does Numeric;
 
 use Number::Subs;
 use Number::Vars;
+use Number::Wolfram;
 
 my $DEBUG = 0;
 
