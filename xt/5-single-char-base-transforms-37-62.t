@@ -2,14 +2,15 @@ use Test;
 
 use Number :ALL;
 
-plan 62;
+plan 91;
 
 # error conditions
-dies-ok { 
-    rebase('Z', 20, 3); 
+dies-ok {
+    rebase('Z', 20, 3);
 }, "incorrect base number for input";
 
-for 1..61 -> $i {
+#for 1..61 -> $i {
+for 1..90 -> $i {
     my $bi = 10;
     my $bo = $i+1;
 

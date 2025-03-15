@@ -1235,7 +1235,8 @@ to convert between logarithms in different bases, the formula:
 
 sub from-dec-to-b37-b91(
     UInt $x'dec,
-    UInt $base-o where ( 36 < $base-o < 63 ),
+#   UInt $base-o where ( 36 < $base-o < 63 ),
+    UInt $base-o where ( 37 <= $base-o <= 91 ),
     # optional args
     :$length is copy, # for padding
     :$prefix is copy,

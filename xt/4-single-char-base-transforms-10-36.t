@@ -29,22 +29,6 @@ for 10..36 -> $dec {
 
     die "FATAL: Output number is NOT a single char." if $tnum-out.chars != 1;
 
-    =begin comment
-    # special cases
-    if $bo eq '2' {
-        my $out = '0b' ~ $tnum-out;
-        is rebase($tnum-in, $bi, $bo, :$prefix), $out;
-    }
-    elsif $bo eq '8' {
-        my $out = '0o' ~ $tnum-out;
-        is rebase($tnum-in, $bi, $bo, :$prefix), $out;
-    }
-    elsif $bo eq '10' {
-        my $out = '0d' ~ $tnum-out;
-        is rebase($tnum-in, $bi, $bo, :$prefix), $out;
-    }
-    =end comment
-
     if $bo eq '16' {
         my $out = '0x' ~ $tnum-out;
         is rebase($tnum-in, $bi, $bo, :$prefix), $out;
