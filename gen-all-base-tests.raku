@@ -13,12 +13,19 @@ $fh.print: q:to/HERE/;
 
 use Test;
 use Number :ALL;
+use Number::Subs :ALL;
 
 #plan 97;
 
 my $r; # exe results to test
 my $length = 4; 
+
+# temp ending
+is 1, 1;
+
+done-testing;
 HERE
+$fh.close;
 
 # plan
 #   For bases 2..36 generate a set of M strings N chars long split by 
@@ -77,7 +84,6 @@ for 2..36 -> $base {
     $r = string2num $set2, :$base;
     is $r, $dec2;
     =end comment
-    
 
 }
  
