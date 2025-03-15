@@ -116,7 +116,86 @@ submethod TWEAK {
         if 37 <= $!base <= 91 {
             ($!integer, $!fraction) = self.to-base: $!number, :base($!base);
         }
+        else {
+            $!decimal = parse-base $!number.Str, $!base;
+            if $!decimal < 0 {
+                $!sign = '-';
+            }
+            ($!integer, $!fraction) = $!decimal.split: '.';
+        }
+
+        return;
     }
+
+    my ($sign, $integer, $fraction);
+    my $num = $!number;
+    my ($prefix, $suffix)  = "", ""; # to hold embedded base modifiers
+
+    if $num ~~ Str {
+        # it must be a string repr of a valid base number
+        my $s = "";
+
+        # save any leading sign
+        $sign = "";
+        if $num ~~ /^ (<[+-]>) (.+) $/ {
+            $sign = ~$0;
+            $num  = ~$1;
+        }
+
+        #=============================================================
+        # extract any leading or trailing modifiers (can have only one
+        # type or the other) leading modifiers
+        #=============================================================
+        # leading modifiers
+        if $num ~~ /^
+                      (0 <[bodx]>)?
+                      (.+)
+                   $/ {
+            $prefix = ~$0 if $0.defined;
+            $num    = ~$1;
+        }
+        elsif $num ~~ /^
+                      (<[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
+                      (.+)
+                   $/ {
+            $prefix = ~$0 if $0.defined;
+            $num    = ~$1;
+        }
+        # trailing modifiers (cannot have both leading and training
+        # modifiers)
+        elsif $num ~~ /^
+                         # accepting all chars other than prefix modifiers
+                         (<-[ \x[2080] .. \x[2089] ]>+)
+                         # trailing suffix modifiers, if any
+                         ( <[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
+                     $/ {
+            $num    = ~$0;
+            $suffix = ~$1 if $1.defined;
+        }
+        #==============================
+        # end modifier extraction
+        #==============================
+
+        # any fractional parts
+        if $num ~~ /^
+                      # extract all chars before the radix point
+                      (<-[.]>)
+                      # and all after, if any
+                      ['.' (.+)]?
+                      $/ {
+            $num  = ~$0;
+            $num ~= ~$1 if $1.defined; # includes the radix point
+        }
+        # num is now in parts for reassembly
+
+    }
+    else {
+
+        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
+        exit;
+    }
+
+
     note  "WARNING: Please add special, embedded base handling in Number.rakumod";
 }
 
