@@ -119,7 +119,8 @@ sub from-dec-to-b37-b62(
 } # from-dec-to-b37-b62
 
 # rewrite of sub 'from-dec-to-b37-b62' to cover all rebases
-sub wolfram-rebase(
+#sub wolfram-rebase(
+sub w-rebase(
     :$num-i, # $x'dec,
     :$num-o,
     :$base-i where ( 2 <= $base-i <= 91 ),
@@ -131,7 +132,7 @@ sub wolfram-rebase(
     :lc($LC) is copy,
     :$debug,
     --> Str
-    ) is export(:wolfram-rebase) {
+    ) is export(:w-rebase) {
 
     my UInt $len = $num-o.chars; # $x'dec.chars;
 
@@ -188,4 +189,5 @@ sub wolfram-rebase(
     $x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
 
     $x'b;
-} # wolfram-rebase
+} # w-rebase
+# wolfram-rebase
