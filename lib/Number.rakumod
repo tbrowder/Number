@@ -103,10 +103,13 @@ has     $.base is rw;  # optional upon entry when using valid base modifiers,
 # the decimal number resulting from the input (immutable)
 has     $.decimal;     # immutable
 
+#=begin comment
+# should not be necessary after w-rebase is complete
 # the pieces for use with bases > 36
 has Str $.sign     = '';  # or '+' or '-'
 has Str $.integer  = '';  # takes the sign, if any
 has Str $.fraction = '';  # any fractional part
+#=comment
 
 submethod TWEAK {
 
