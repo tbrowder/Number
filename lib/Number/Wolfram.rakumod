@@ -4,9 +4,17 @@ use Number::Vars :ALL;
 
 =begin comment
 
-General method of converting a whole number (decimal) to base b
+General method of converting a real number x to base b where b
+is an integer != 0. (But we shall use bases >= 2 and <= 90
+for real numbers and >= 2 and <= 91 for integers.)
 
 (from Wolfram, see http://mathworld.wolfram.com/Base.html)
+
+The base b representation of a number x is 
+
+ (a_n a_n-1 ... a_0.a_-1 ...)_b
+
+(e.g, 123.456_10). 
 
 The index of the leading digit needed to represent the number x in
 base b is:
@@ -21,11 +29,28 @@ where r_n = x and
 
   r_(i-1) = r_i - a_i * b^i
 
-for i = n, n -1, ..., 1, 0
+for i = n, n - 1, ..., 1, 0, .... This gives the base b representation
+of x. Note that if x is an integer, then i need only run through 0,
+and that if x has a fractional part, then the expansion may or may not
+terminate. For example, the hexadecimal representation of 0.1 (which
+terminates in decimal notation) is the infinite expression 0.19999..._h.
 
-to convert between logarithms in different bases, the formula:
+The base of a logarithm is a number b used to define the number system
+in which the logarithm is computed. In general, the logarithm of a
+number x in base b is written log_b x. The symbol log x is an 
+abbeviation regrettably used both for the common logarithm log_10 x
+(by engineers and physicists and indicated on pocket calcutators)
+and for the natural logarithn log_e x(by mathematicians).
+ln x denotes the natural logarithm log_e x (as used by engineers and
+physicists and indicated on pocket calculators), and lg x denotes log_2 x.
+In this work, the notations log x = log_10 x and ln x = log_e x are
+used.
+ 
+To convert between logarithms in different bases, the formula
 
-  log_b x = ln x / ln b
+  log_b x = ln x / ln b                                 (20)
+
+can be used.
 
 =end comment
 
@@ -136,7 +161,9 @@ sub wolfram-rebase(
     @r[$n] = $num-i;
 
     # work through the $x'dec.chars places (positions, indices?)
-    # for now just handle integers (later, real, i.e., digits after a fraction point)
+    # for now just handle integers (later, real, i.e., digits after a 
+    # fraction point)
+
     my @rev = (0..$n).reverse;
     for @rev -> $i { # <= Wolfram text is misleading here
 	my $b'i  = $base-o ** $i;

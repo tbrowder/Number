@@ -4,6 +4,7 @@
 use Test;
 use Number :ALL;
 use Number::Subs :ALL;
+use Number::Wolfram :ALL;
 
 #plan 97;
 

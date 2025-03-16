@@ -1,12 +1,18 @@
 unit module Helpers;
 
-#my \BIN = 2;
-#my \OCT = 8;
-#my \DEC = 10;
-#my \HEX = 16;
-
 # we do NOT write any tests that are expected to fail (such as using :prefix
 # and :suffix at the same time
+
+sub write-test-data-wolfram(
+    # this writes test data for sub wolfram-rebase
+) is export {
+}
+
+
+sub write-test-wolfram(
+    # this writes tests for sub wolfram-rebase
+) is export {
+}
 
 sub write-test-rebase(
     # this writes tests for sub rebase
@@ -21,7 +27,7 @@ sub write-test-rebase(
     :$suffix is copy,
     :lower-case(:lc(:$LC)) is copy,
     ) is export {
-)
+}
 
 sub write-test-base(
     # this writes tests the family of subs X2Y (e.g., bin2oct)
@@ -89,8 +95,6 @@ sub write-test-base(
 
     # write the actual tests
     if $length and $prefix {
-        #my $n = $prefix ?? 6 !! 4;
-        #$fh.say: "is \$r.chars, $n;";
         $fh.say: "is \$r.chars, $length;";
     }
 }
