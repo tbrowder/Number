@@ -54,7 +54,7 @@ our token all-bases is export(:token-all-bases)
 #| ! # $ % & ( ) * + , " / : ; < = > ? @ [ ] ^ _ ` { | } ~ .
 #|
 #| Then, for bases 2 through 90 the radix point is the period. For
-#| base 91 we provide a separate routine to return the integer and
+#| base 91 we need to provide a separate routine to return the integer and
 #| fractional parts.
 
 # Standard digit set for bases 2 through 91 (char 0 through 91).
@@ -100,6 +100,8 @@ has     $.number is rw is required;
 has     $.base is rw;  # optional upon entry when using valid base modifiers,
                        # must satisfy: 2 <= $base <= 91
 
+has     $.radix-point = '.';
+
 # the decimal number resulting from the input (immutable)
 has     $.decimal;     # immutable
 
@@ -131,11 +133,20 @@ submethod TWEAK {
         return;
     }
 
+    # has an inline base indicator (mandatory? or assume from highest base character
+    # found)
     my ($sign, $integer, $fraction);
     my $num = $!number;
     my ($prefix, $suffix)  = "", ""; # to hold embedded base modifiers
 
-    if $num ~~ Str {
+    unless $num ~~ Str {
+        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
+        note "  Exiting...";
+        exit;
+    }
+
+    # $num is a string
+#   if $num ~~ Str {
         # it must be a string repr of a valid base number
         my $s = "";
 
@@ -192,13 +203,7 @@ submethod TWEAK {
         }
         # num is now in parts for reassembly
 
-    }
-    else {
-
-        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
-        exit;
-    }
-
+#   }
 
     note  "WARNING: Please add special, embedded base handling in Number.rakumod";
 }
