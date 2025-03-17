@@ -38,7 +38,6 @@ sub write-test-data-wolfram(
         my $n1 = @n1.join("");
 
         my @n2 = @digits.roll: $N2+1;
-#       @n2.shift; # bad num
         my $n2 = @n2.join("");
         my $set1 = ($n1 ~ '.' ~ $n2);
 
@@ -47,21 +46,21 @@ sub write-test-data-wolfram(
         # get another two random sets of $N digits
         # negate the second sets
         my @n3 = @digits.roll: $N1+1;
-#       @n3.shift; # bad num
         my $n3 = @n3.join("");
         $n3 = "-" ~ $n3;
 
         my @n4 = @digits.roll: $N2+1;
-#       @n4.shift; # bad num
         my $n4 = @n4.join("");
         my $set2 = ($n3 ~ '.' ~ $n4);
         say $set2 if 0 or $debug;
 
 #       # create the actual test set:
-#       my $dec1 = parse-base $set1, $base;
-#       my $dec2 = parse-base $set2, $base;
-#       say "$set1 $dec1 $base" if 0 or $debug;
-#       say "$set2 $dec2 $base" if 0 or $debug;
+        my $dec1 = parse-base $set1, $base;
+        my $dec2 = parse-base $set2, $base;
+    #   string.num   base    decimal-result
+      
+        say "$set1 $base $dec1";
+        say "$set2 $base $dec2";
 
         =begin comment
         # the actual tests
