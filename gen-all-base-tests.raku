@@ -7,17 +7,23 @@ use Number::Wolfram :ALL;
 use lib "./t";
 use Helpers;
 
-my $debug = 0;
+my $debug = 1;
 
 my $ofil = "t/90-base2-base36-round-trip-tests.t";
 
 if $debug {
-    my $nrands = 10;
-    my @uints = 1..5;
+    #my $nrands = 10;
+    my $nrands = 5;
+    #my @uints = 1..5;
+    my @uints = 1..4;
+    #srand 5;
     for 0..^5 {
         srand 5;
-        my $n = @uints.roll($nrands).join;
-        say $n if $_;
+        #my $n = @uints.roll($nrands).join;
+        my $n = @uints.roll($nrands).join(" ");
+
+        #say $n if $_;
+        say $n;
     }
     exit;
 }
