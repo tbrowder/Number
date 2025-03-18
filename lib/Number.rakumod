@@ -105,6 +105,9 @@ has     $.radix-point = '.';
 # the decimal number resulting from the input (immutable)
 has     $.decimal;     # immutable
 
+has $.prefix;
+has $.suffix;
+
 #=begin comment
 # should not be necessary after w-rebase is complete
 # the pieces for use with bases > 36
@@ -133,11 +136,16 @@ submethod TWEAK {
         return;
     }
 
-    # has an inline base indicator (mandatory? or assume from highest base character
-    # found)
+    # The number must have an inline base indicator, but, if not, the base
+    # will be assumed to be the base defined by the  highest base character
+    # found in $!number.
+
     my ($sign, $integer, $fraction);
+
     my $num = $!number;
-    my ($prefix, $suffix)  = "", ""; # to hold embedded base modifiers
+    my ($prefix, $suffix);   # to hold any embedded base modifiers
+    my ($prefix2, $suffix2); # to hold a second one
+    my ($base1, $base2);     # intermediate values during parsing
 
     unless $num ~~ Str {
         note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
@@ -145,65 +153,149 @@ submethod TWEAK {
         exit;
     }
 
-    # $num is a string
-#   if $num ~~ Str {
-        # it must be a string repr of a valid base number
-        my $s = "";
+    # $num is a string: it must be a string repr of a valid base number
+    say "DEBUG: incoming string num: '$num'; individual chars:";
+    for $num.comb {
+        print "$_ ";
+    }
+    say();
 
-        # save any leading sign
-        $sign = "";
-        if $num ~~ /^ (<[+-]>) (.+) $/ {
-            $sign = ~$0;
-            $num  = ~$1;
-        }
+    my $s = "";
 
-        #=============================================================
-        # extract any leading or trailing modifiers (can have only one
-        # type or the other) leading modifiers
-        #=============================================================
-        # leading modifiers
-        if $num ~~ /^
-                      (0 <[bodx]>)?
-                      (.+)
-                   $/ {
-            $prefix = ~$0 if $0.defined;
-            $num    = ~$1;
-        }
-        elsif $num ~~ /^
-                      (<[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
-                      (.+)
-                   $/ {
-            $prefix = ~$0 if $0.defined;
-            $num    = ~$1;
-        }
-        # trailing modifiers (cannot have both leading and training
-        # modifiers)
-        elsif $num ~~ /^
-                         # accepting all chars other than prefix modifiers
-                         (<-[ \x[2080] .. \x[2089] ]>+)
-                         # trailing suffix modifiers, if any
-                         ( <[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
-                     $/ {
-            $num    = ~$0;
-            $suffix = ~$1 if $1.defined;
-        }
-        #==============================
-        # end modifier extraction
-        #==============================
+    # save any leading sign
+    $sign = "";
+    if $num ~~ /^ (<[+-]>) (.+) $/ {
+        $sign = ~$0;
+        $num  = ~$1;
+    }
 
-        # any fractional parts
-        if $num ~~ /^
-                      # extract all chars before the radix point
-                      (<-[.]>)
-                      # and all after, if any
-                      ['.' (.+)]?
-                      $/ {
-            $num  = ~$0;
-            $num ~= ~$1 if $1.defined; # includes the radix point
-        }
-        # num is now in parts for reassembly
+    #=============================================================
+    # extract any leading or trailing modifiers (can have only one
+    # type or the other) leading modifiers
+    #=============================================================
+    # leading modifiers
+    if $num ~~ /^
+                  (0 <[bodx]>)
+                  (.+)
+               $/ {
+        $prefix = ~$0.lc;
+        $num    = ~$1;
+    }
+    elsif $num ~~ /^
+                  [
+                     (<[ \x[2081] .. \x[2089] ]>)
+                     (<[ \x[2080] .. \x[2089] ]>)?  # test construct, may need []
+                  ]
+                  (.+)
+               $/ {
+        $prefix  = ~$0;
+        $prefix2 = ~$1 if $1.defined;
+        $num     = ~$2;
+    }
+    # trailing modifiers (cannot have both leading and training
+    # modifiers)
+    elsif $num ~~ /^
+                     # accepting all chars other than prefix modifiers
+                     (<-[ \x[2080] .. \x[2089] ]>+)
+                     # trailing suffix modifiers, if any
+                     [
+                       (<[ \x[2081] .. \x[2089] ]>)
+                       (<[ \x[2080] .. \x[2089] ]>)?  # test construct, may need []
+                     ]
+                 $/ {
+        $num     = ~$0;
+        $suffix  = ~$1;
+        $suffix2 = ~$2 if $2.defined;
+    }
+    #==============================
+    # end modifier extraction
+    #==============================
 
-#   }
+    # any fractional parts
+    if $num ~~ /^
+                  # extract all chars before the radix point
+                  (<-[.]>)
+                  # and all after, if any
+                  ['.' (.+)]?
+                  $/ {
+        $num  = ~$0;
+        if $1.defined {
+            $num ~= '.';
+            $num ~= ~$1;
+        }
+    }
+
+    # $num is now in parts for reassembly into number and base
+    say "WARNING: have both prefix and suffix" if $prefix and $suffix;
+    with $prefix {
+        when /b/ { $!base = 2  }
+        when /o/ { $!base = 8  }
+        when /d/ { $!base = 10 }
+        when /x/ { $!base = 16 }
+
+        when / \x[2081] / { $base1 = 1 }
+        when / \x[2082] / { $base1 = 2 }
+        when / \x[2083] / { $base1 = 3 }
+        when / \x[2084] / { $base1 = 4 }
+        when / \x[2085] / { $base1 = 5 }
+        when / \x[2086] / { $base1 = 6 }
+        when / \x[2087] / { $base1 = 7 } 
+        when / \x[2088] / { $base1 = 8 }
+        when / \x[2089] / { $base1 = 9 }
+    }
+    with $prefix2 {
+        when / \x[2080] / { $base2 = 0 }
+        when / \x[2081] / { $base2 = 1 }
+        when / \x[2082] / { $base2 = 2 }
+        when / \x[2083] / { $base2 = 3 }
+        when / \x[2084] / { $base2 = 4 }
+        when / \x[2085] / { $base2 = 5 }
+        when / \x[2086] / { $base2 = 6 }
+        when / \x[2087] / { $base2 = 7 } 
+        when / \x[2088] / { $base2 = 8 }
+        when / \x[2089] / { $base2 = 9 }
+    }
+    with $suffix {
+        when / \x[2081] / { $base1 = 1 }
+        when / \x[2082] / { $base1 = 2 }
+        when / \x[2083] / { $base1 = 3 }
+        when / \x[2084] / { $base1 = 4 }
+        when / \x[2085] / { $base1 = 5 }
+        when / \x[2086] / { $base1 = 6 }
+        when / \x[2087] / { $base1 = 7 } 
+        when / \x[2088] / { $base1 = 8 }
+        when / \x[2089] / { $base1 = 9 }
+    }
+    with $suffix2 {
+        when / \x[2080] / { $base2 = 0 }
+        when / \x[2081] / { $base2 = 1 }
+        when / \x[2082] / { $base2 = 2 }
+        when / \x[2083] / { $base2 = 3 }
+        when / \x[2084] / { $base2 = 4 }
+        when / \x[2085] / { $base2 = 5 }
+        when / \x[2086] / { $base2 = 6 }
+        when / \x[2087] / { $base2 = 7 } 
+        when / \x[2088] / { $base2 = 8 }
+        when / \x[2089] / { $base2 = 9 }
+    }
+    if $base1.defined {
+        if $base2.defined {
+            $!base = $base1.Numeric + $base2.Numeric;
+        }
+        else {
+            $!base = $base1.Numeric;
+        }
+    }
+
+
+say "DEBUG: num parts:";
+say "  num     : $num";
+say "  integer : $!integer";
+say "  fraction: $!fraction";
+say "  sign    : $!sign";
+say "  prefix  : $prefix" if $prefix.defined;
+say "  suffix  : $suffix" if $suffix.defined;
+say "  base    : $!base";
 
     note  "WARNING: Please add special, embedded base handling in Number.rakumod";
 }

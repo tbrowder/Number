@@ -12,7 +12,7 @@ Number in: '-123.9', base in: 11, decimal value: -146.818182
 
 my ($o);
 
-$o = Number.new: :number<\x[2088]11>;
+$o = Number.new: :number("\x[2088]11");
 isa-ok $o, Number, "inline embedded base indicator, leading";
 #is $o.base, 8, "base 8";
 is $o.number, <\x[2088]11>, "number ok, leading";
