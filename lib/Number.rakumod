@@ -118,6 +118,7 @@ has Str $.fraction = '';  # any fractional part
 
 submethod TWEAK {
     
+    # check 1
     if $!base.defined {
         unless 2 <= $!base <= 91 {
             die "FATAL: 'base' must be >= 2 and <= 91, input was '$!base'";
@@ -135,12 +136,14 @@ submethod TWEAK {
         return;
     }
 
+    # check 2
     unless $!number ~~ Str {
         note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
         note "  Exiting...";
         exit;
     }
 
+    # check 3
     # Check to see if the number has a built-in leading base indicator.
     if $!number ~~ / <[+-]>? 0 (b|o|d|x) / {
         my $t = ~$0;
@@ -152,25 +155,69 @@ submethod TWEAK {
             when /x/ { $typ = 'hexadecimal'; $!base = 16; }
         }
         #$!decimal = parse-base $!number.ord.Numeric; #, $!base;
-        $!decimal = $!number.ord; #.Numeric; #, $!base;
-        note "DEBUG: number type: '$typ'";
+        $!decimal = $!number.Numeric; #ord; #.Numeric; #, $!base;
+        my $h = $!decimal.base: 16;
+        note "DEBUG: number type: '$typ'; decimal: $!decimal, hex: $h";
         return;
     }
+
     # Special base indicaters (subscript letters: \x208 0..9s
     my @c = $!number.comb;
-    my $L = @c.head.chr;
-    my $T = @c.tail.chr;
+    my $nc = @c.elems;
+
+    # leading modifiers
+    my $L  = @c[0].Numeric.base: 16;
+    my $L2 = @c[1].Numeric.base: 16;
+    # check 4
     if $L ~~ /^ 208 (\d) / {
-        my $c = +$0;
-        note "DEBUG: leading subscript char: $c";
+        my $num = "";
+        my $c1 = ~$0;
+        note "DEBUG: leading subscript char: $c1";
+        if $L2 ~~ /^ 208 (\d) / {
+            # two subscript chars
+            # remove them from the base string
+            my $c2 = ~$0;
+            note "DEBUG: 2nd leading subscript char: $c2";
+            $num = @c[2..^$nc].join;
+            note "DEBUG: remaining chars: $num";
+        }
+        else {
+            # one subscript char
+            # remove it from the base string
+            $num = @c[1..^$nc].join;
+            note "DEBUG: remaining chars: $num";
+        }
+
+        return;
     }
-    elsif $T ~~ /^ 208 (\d) / {
-        my $c = +$0;
-        note "DEBUG: trailing subscript char: $c";
+
+    # check 5
+    # trailing modifiers
+    my $T2 = @c[$nc-1].Numeric.base: 16;
+    my $T1 = @c[$nc-2].Numeric.base: 16;
+    if $T2 ~~ /^ 208 (\d) / {
+        my $num = "";
+        my $c2 = +$0;
+        note "DEBUG: trailing subscript char: $c2";
+        if $T1 ~~ /^ 208 (\d) / {
+            # two subscript chars
+            # remove them from the base string
+            $num = @c[0..^$nc-2].join;
+            note "DEBUG: remaining chars: $num";
+        }
+        else {
+            # one subscript char
+            # remove it from the base string
+            $num = @c[0..^$nc-1].join;
+            note "DEBUG: remaining chars: $num";
+        }
+
+        return;
     }
 
 
-
+    # As a final step, if all the chars are members of a valid set of base
+    # characters 2 >= $base <= 36, choose the lowest base.
 
 =begin comment
 
@@ -320,9 +367,6 @@ submethod TWEAK {
     }
 
 =end comment
-
-    # As a final step, if all the chars are members of a valid set of base
-    # characters 2 >= $base <= 36, choose the lowest base.
 
 
 say "DEBUG: num parts:";

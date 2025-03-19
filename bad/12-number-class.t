@@ -15,7 +15,7 @@ my ($o);
 $o = Number.new: :number("\x[2088]11");
 isa-ok $o, Number, "inline embedded base indicator, leading";
 is $o.base, 8, "base 8";
-is $o.number, 6, "number ok, leading";
+is $o.number, 11, "number ok, leading";
 say "decimal: ", $o.decimal;
 say "base: ", $o.base;
 

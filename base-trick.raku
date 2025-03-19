@@ -3,6 +3,8 @@
 use Test;
 use Number :ALL;
 
+my $o;
+
 my $s = "\x2083";
 say $s.comb.head, " <= subscript 3 (hex char 2083)";
 $s = $s.comb.head;
@@ -42,6 +44,12 @@ say ($x ~~ Int), " Str '$x' is NOT an Int";
 say $x.ord, " .ord of the first char in '$x'";;
 say 'a'.ord, " .ord of char 'a'";;
 
+my $z = "0o11"; #234";
+$o = Number.new: :number($z);
+say $o.number;
+say $o.decimal;
+is $o.decimal, 9;
+
 =finish
 
 
@@ -52,7 +60,3 @@ my $o = Number.new: :number($x);
 say $o.number;
 say $o.decimal;
 
-my $z = "0o1234";
-$o = Number.new: :number($z);
-say $o.number;
-say $o.decimal;
