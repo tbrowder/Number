@@ -10,6 +10,7 @@ SYNOPSIS
 
 ```raku
 use Number;
+my $o = Number.new: :number("abcd");
 ```
 
 DESCRIPTION
