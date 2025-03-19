@@ -9,6 +9,7 @@ from 2 to 91
 
 =begin code :lang<raku>
 use Number;
+my $o = Number.new: :number("abcd");
 =end code
 
 =head1 DESCRIPTION

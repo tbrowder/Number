@@ -4,7 +4,7 @@
 
 Note that, in some fonts, some characters are easily misidentified and
 some implementations of higher bases exchange other, non-alphabetic
-characters for them. Currently this module does note attempt
+characters for them. Currently this module does not attempt
 to handle that and you must file an issue if that causes problems
 for your use case.
 

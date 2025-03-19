@@ -117,7 +117,7 @@ has Str $.fraction = '';  # any fractional part
 #=comment
 
 submethod TWEAK {
-
+    
     if $!base.defined {
         unless 2 <= $!base <= 91 {
             die "FATAL: 'base' must be >= 2 and <= 91, input was '$!base'";
@@ -132,9 +132,47 @@ submethod TWEAK {
             }
             ($!integer, $!fraction) = $!decimal.split: '.';
         }
-
         return;
     }
+
+    unless $!number ~~ Str {
+        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
+        note "  Exiting...";
+        exit;
+    }
+
+    # Check to see if the number has a built-in leading base indicator.
+    if $!number ~~ / <[+-]>? 0 (b|o|d|x) / {
+        my $t = ~$0;
+        my $typ;
+        with $t {
+            when /b/ { $typ = 'binary';      $!base = 2;  }
+            when /o/ { $typ = 'octal';       $!base = 8;  }
+            when /d/ { $typ = 'decimal';     $!base = 10; }
+            when /x/ { $typ = 'hexadecimal'; $!base = 16; }
+        }
+        #$!decimal = parse-base $!number.ord.Numeric; #, $!base;
+        $!decimal = $!number.ord; #.Numeric; #, $!base;
+        note "DEBUG: number type: '$typ'";
+        return;
+    }
+    # Special base indicaters (subscript letters: \x208 0..9s
+    my @c = $!number.comb;
+    my $L = @c.head.chr;
+    my $T = @c.tail.chr;
+    if $L ~~ /^ 208 (\d) / {
+        my $c = +$0;
+        note "DEBUG: leading subscript char: $c";
+    }
+    elsif $T ~~ /^ 208 (\d) / {
+        my $c = +$0;
+        note "DEBUG: trailing subscript char: $c";
+    }
+
+
+
+
+=begin comment
 
     # The number must have an inline base indicator, but, if not, the base
     # will be assumed to be the base defined by the  highest base character
@@ -146,12 +184,6 @@ submethod TWEAK {
     my ($prefix, $suffix);   # to hold any embedded base modifiers
     my ($prefix2, $suffix2); # to hold a second one
     my ($base1, $base2);     # intermediate values during parsing
-
-    unless $num ~~ Str {
-        note "DEBUG TWEAK: Tom fix for this input for \$!number: |$!number|";
-        note "  Exiting...";
-        exit;
-    }
 
     # $num is a string: it must be a string repr of a valid base number
     say "DEBUG: incoming string num: '$num'; individual chars:";
@@ -287,14 +319,22 @@ submethod TWEAK {
         }
     }
 
+=end comment
+
+    # As a final step, if all the chars are members of a valid set of base
+    # characters 2 >= $base <= 36, choose the lowest base.
+
 
 say "DEBUG: num parts:";
-say "  num     : $num";
+#say "  num     : $num";
+say " \$!number  : $!number";
+say " \$!decimal : $!decimal";
+
 say "  integer : $!integer";
 say "  fraction: $!fraction";
 say "  sign    : $!sign";
-say "  prefix  : $prefix" if $prefix.defined;
-say "  suffix  : $suffix" if $suffix.defined;
+#say "  prefix  : $prefix" if $prefix.defined;
+#say "  suffix  : $suffix" if $suffix.defined;
 say "  base    : $!base";
 
     note  "WARNING: Please add special, embedded base handling in Number.rakumod";
