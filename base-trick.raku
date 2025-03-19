@@ -50,6 +50,13 @@ say $o.number;
 say $o.decimal;
 is $o.decimal, 9;
 
+$z = '₁₁10.1';
+for $z.comb {
+    say $_.ord.base(16);
+}
+
+#$o = Number.new: :number($z);
+
 =finish
 
 
