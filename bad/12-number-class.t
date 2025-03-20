@@ -12,10 +12,14 @@ Number in: '-123.9', base in: 11, decimal value: -146.818182
 
 my ($o);
 
+my $nn = "\x[2088]11";
+say $nn;
 $o = Number.new: :number("\x[2088]11");
+#$o = Number.new: :number($nn); #"\x[2088]11");
 isa-ok $o, Number, "inline embedded base indicator, leading";
 is $o.base, 8, "base 8";
-is $o.number, 11, "number ok, leading";
+is $o.number, $nn, "number {$o.number}, leading";
+is $o.decimal, 9;
 say "decimal: ", $o.decimal;
 say "base: ", $o.base;
 

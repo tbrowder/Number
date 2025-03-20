@@ -158,16 +158,17 @@ submethod TWEAK {
         $!decimal = $!number.Numeric; #ord; #.Numeric; #, $!base;
         my $h = $!decimal.base: 16;
         note "DEBUG: number type: '$typ'; decimal: $!decimal, hex: $h";
+
         return;
     }
 
-    # Special base indicaters (subscript letters: \x208 0..9s
+    # Special base indicators (subscript letters: \x208 0..9s
     my @c = $!number.comb;
     my $nc = @c.elems;
 
     # leading modifiers
-    my $L  = @c[0].Numeric.base: 16;
-    my $L2 = @c[1].Numeric.base: 16;
+    my $L  = @c[0].ord.base: 16;
+    my $L2 = @c[1].ord.base: 16;
     # check 4
     if $L ~~ /^ 208 (\d) / {
         my $num = "";
@@ -180,12 +181,16 @@ submethod TWEAK {
             note "DEBUG: 2nd leading subscript char: $c2";
             $num = @c[2..^$nc].join;
             note "DEBUG: remaining chars: $num";
+            $!base = ($c1 ~ $c2).Int;
+            $!decimal = $num.parse-base: $!base
         }
         else {
             # one subscript char
             # remove it from the base string
             $num = @c[1..^$nc].join;
             note "DEBUG: remaining chars: $num";
+            $!base = ($c1).Int;
+            $!decimal = $num.parse-base: $!base
         }
 
         return;
@@ -193,28 +198,34 @@ submethod TWEAK {
 
     # check 5
     # trailing modifiers
-    my $T2 = @c[$nc-1].Numeric.base: 16;
-    my $T1 = @c[$nc-2].Numeric.base: 16;
+    #my $T2 = @c[$nc-1].Numeric.base: 16;
+    my $T2 = @c[$nc-1].ord.base: 16;
+    #my $T1 = @c[$nc-2].Numeric.base: 16;
+    my $T1 = @c[$nc-2].ord.base: 16;
     if $T2 ~~ /^ 208 (\d) / {
         my $num = "";
-        my $c2 = +$0;
+        my $c2 = ~$0;
         note "DEBUG: trailing subscript char: $c2";
         if $T1 ~~ /^ 208 (\d) / {
             # two subscript chars
             # remove them from the base string
             $num = @c[0..^$nc-2].join;
             note "DEBUG: remaining chars: $num";
+            my $c1 = ~$0;
+            $!base = ($c1 ~ $c2).Int;
+            $!decimal = $num.parse-base: $!base;
         }
         else {
             # one subscript char
             # remove it from the base string
             $num = @c[0..^$nc-1].join;
             note "DEBUG: remaining chars: $num";
+            $!base = ($c2).Int;
+            $!decimal = $num.parse-base: $!base;
         }
 
         return;
     }
-
 
     # As a final step, if all the chars are members of a valid set of base
     # characters 2 >= $base <= 36, choose the lowest base.
