@@ -23,18 +23,6 @@ is $o.decimal, 9;
 say "decimal: ", $o.decimal;
 say "base: ", $o.base;
 
-# temp end
-done-testing;
-exit;
-
-$o = Number.new: :number<11\x[2088]>;
-isa-ok $o, Number, "inline embedded base indicator, trailing";
-#is $o.base, 8, "base 8";
-is $o.number, <11\x[2088]>, "number ok, trailing";
-say $o.number;
-say $o.decimal;
-#is $o.number, "-123.4", "self.number is correct, with angle brackets";
-
 $o = Number.new: :number<-123.4>, :base(10);
 isa-ok $o, Number;
 is $o.number, "-123.4", "self.number is correct, with angle brackets";
@@ -57,6 +45,15 @@ isa-ok $o, Number;
 is $o.number, "-123.4", "self.number is correct, with angle brackets";
 is $o.decimal, "-146.363636", "self.decimal is correct, with angle brackets";
 is $o.base, 11, "base 11";
+is $o.Numeric, -146.363636, "coerced to decimal by Numeric";
+
+$o = Number.new: :number<abcde>;
+isa-ok $o, Number;
+
+my $o1 = Number.new: :number(10);
+my $o2 = Number.new: :number(100);
+my $o3 = $o1 * $o2;
+is $o3, 1000, "multiply Numbers";
 
 dies-ok {
     $o = Number.new: :number(1234), :base(1);
