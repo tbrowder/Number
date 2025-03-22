@@ -71,6 +71,7 @@ our @dec2digit is export(:dec2digit) = [
     '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', # 90
     '.',                                              # 91
     ];
+
 # Standard digit set for bases 2 through 91 (char 0 through 91).
 # The hash is comprised of digit keys and their decimal value.
 our %digit2dec is export(:digit2dec) = @dec2digit.antipairs;
@@ -159,7 +160,6 @@ submethod TWEAK {
             when /d/ { $typ = 'decimal';     $!base = 10; }
             when /x/ { $typ = 'hexadecimal'; $!base = 16; }
         }
-        #$!decimal = parse-base $!number.ord.Numeric; #, $!base;
         $!decimal = $!number.Numeric; #ord; #.Numeric; #, $!base;
         my $h = $!decimal.base: 16;
         note "DEBUG: number type: '$typ'; decimal: $!decimal, hex: $h";

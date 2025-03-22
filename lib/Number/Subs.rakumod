@@ -128,7 +128,7 @@ sub create-set(
 } # sub create-set
 
 sub create-base-set(
-    UInt $base where ( 1 < $base < 92 ),
+    UInt $base where ( 2 <= $base <= 91 ),
     :$debug,
     --> Set
     ) is export {
