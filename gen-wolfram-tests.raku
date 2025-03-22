@@ -7,32 +7,18 @@ use Number::Wolfram :ALL;
 use lib "./t";
 use Helpers;
 
-my $debug = 1;
+my $debug = 0;
 
 my $ofil = "t/90-base2-base36-round-trip-tests.t";
-
-if $debug {
-    #my $nrands = 10;
-    my $nrands = 5;
-    #my @uints = 1..5;
-    my @uints = 1..4;
-    #srand 5;
-    for 0..^5 {
-        srand 5;
-        #my $n = @uints.roll($nrands).join;
-        my $n = @uints.roll($nrands).join(" ");
-
-        #say $n if $_;
-        say $n;
-    }
-    exit;
-}
 
 my $data = 0;
 my $test = 0;
 if not @*ARGS {
     print qq:to/HERE/;
     Usage: {$*PROGRAM} <mode> [debug]
+
+    Creates tests for the Wolfram method of rebasing integral
+      and real numbers.
 
     Modes:
       data - generate the data file

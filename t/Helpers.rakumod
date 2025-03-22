@@ -7,6 +7,7 @@ use Number::Vars :ALL;
 
 # this sub writes test data for sub w-rebase
 sub write-test-data-wolfram(
+    :$trim = 0,
     :$debug,
 ) is export {
 
@@ -54,13 +55,34 @@ sub write-test-data-wolfram(
         my $set2 = ($n3 ~ '.' ~ $n4);
         say $set2 if 0 or $debug;
 
-#       # create the actual test set:
+        # create the actual test set:
         my $dec1 = parse-base $set1, $base;
         my $dec2 = parse-base $set2, $base;
+
+        if $trim {
+            # trim fraction to $trim chars max
+            my ($int1, $frac1) = $dec1.split('.');
+            my ($int2, $frac2) = $dec2.split('.');
+
+            my $nc1 = $frac1.chars;
+            my $nc2 = $frac2.chars;
+
+            if $nc1 > $trim {
+                $frac1 = $frac1.comb[0..^$trim].join;
+            }
+            if $nc2 > $trim {
+                $frac1 = $frac2.comb[0..^$trim].join;
+            }
+
+            # reassemble
+            $dec1 = $int1 ~ '.' ~ $frac1;
+            $dec2 = $int2 ~ '.' ~ $frac2;
+        } # end trim block
+
     #   string.num   base    decimal-result
       
-        say "$set1 $base $dec1";
-        say "$set2 $base $dec2";
+        say "$set1  $base  $dec1";
+        say "$set2  $base  $dec2";
 
         =begin comment
         # the actual tests
