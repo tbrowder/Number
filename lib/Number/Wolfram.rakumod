@@ -91,7 +91,8 @@ sub from-dec-to-b37-b62(
     @r[$n] = $x'dec;
 
     # work through the $x'dec.chars places (positions, indices?)
-    # for now just handle integers (later, real, i.e., digits after a fraction point)
+    # for now just handle integers (later, real, i.e., digits after a fraction 
+    # point)
     my @rev = (0..$n).reverse;
     for @rev -> $i { # <= Wolfram text is misleading here
 	my $b'i  = $base-o ** $i;
@@ -121,8 +122,8 @@ sub from-dec-to-b37-b62(
 # rewrite of sub 'from-dec-to-b37-b62' to cover all rebases
 #sub wolfram-rebase(
 sub w-rebase(
-    :$num-i, # $x'dec,
-    :$num-o,
+    :$num-i is copy, # to handle fractions # $x'dec,
+#   :$num-o,
     :$base-i where ( 2 <= $base-i <= 91 ),
     :$base-o where ( 2 <= $base-o <= 91 ),
     # optional args
@@ -131,15 +132,29 @@ sub w-rebase(
     :$suffix is copy,
     :lc($LC) is copy,
     :$debug,
-    --> Str
+    --> Str # $num-o
     ) is export(:w-rebase) {
 
-    my UInt $len = $num-o.chars; # $x'dec.chars;
+    my UInt $len = $num-i.chars; # includes any radix point # $x'dec.chars;
 
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
     $LC     = 0 if not $LC.defined;
+
+    # consider any sign
+    my $sign = "";
+    if $num-i ~~ /^ (<[+-]>) (.+) / {
+        $sign  = ~$0 if $0.defined;
+        $num-i = ~$1;
+    }
+
+    # allow for fractional parts
+    my $radix-point = '.';
+my $frac = 0;
+if $num-i.contains: $radix-point {
+    ($num-i, $frac) = $num-i.split: $radix-point;
+}
 
     # see Wolfram's solution (article Base, see notes above)
 
@@ -147,7 +162,6 @@ sub w-rebase(
 
     # note Raku routine 'log' is math function 'ln' if no optional base
     # arg is entered
-#   my $log_b'x = log $x'dec / log $base-o;
     my $log_b'x = log $num-i / log $base-o;
 
     # get place index of first digit
@@ -158,13 +172,9 @@ sub w-rebase(
     my @r[$n + 2];
     my @a[$n + 1];
 
-#   @r[$n] = $x'dec;
     @r[$n] = $num-i;
 
-    # work through the $x'dec.chars places (positions, indices?)
-    # for now just handle integers (later, real, i.e., digits after a 
-    # fraction point)
-
+    # work through the $num-i.chars places (positions, indices?)
     my @rev = (0..$n).reverse;
     for @rev -> $i { # <= Wolfram text is misleading here
 	my $b'i  = $base-o ** $i;
@@ -177,17 +187,30 @@ sub w-rebase(
     }
 
     # @a contains the index of the digits of the number in the new base
-    my $x'b = '';
+    my $num-o = '';
     # digits are in the reversed order
     for @a.reverse -> $di {
         my $digit = @dec2digit[$di];
-        $x'b ~= $digit;
+        $num-o ~= $digit;
     }
 
     # trim leading zeroes
-    $x'b ~~ s/^ 0+ /0/;
-    $x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
+    $num-o ~~ s/^ 0+ /0/;
+    $num-o ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
 
-    $x'b;
+    if $frac {
+        # not so fast! take care of the fractional part
+        my $frac-o = '';
+
+        # reassemble the number's parts
+        $num-o ~= '.' ~ $frac-o;
+    }
+
+    if $sign {
+        $num-o = $sign ~ $num-o;
+    }
+
+    #$x'b;
+    $num-o;
 } # w-rebase
 # wolfram-rebase
