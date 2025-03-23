@@ -48,7 +48,7 @@ sub parse-input(
         # modifiers)
         elsif $num ~~ /^
                          # accepting all chars other than prefix modifiers
-                         (<-[ \x[2080] .. \x[2089] ]>+) 
+                         (<-[ \x[2080] .. \x[2089] ]>+)
                          # trailing suffix modifiers, if any
                          ( <[ \x[2081] .. \x[2089] ]><[ \x[2080] .. \x[2089] ]>?)?
                      $/ {
@@ -60,11 +60,11 @@ sub parse-input(
         #==============================
 
         # any fractional parts
-        if $num ~~ /^ 
+        if $num ~~ /^
                       # extracte all chars before the radix point
-                      (<-[.]>) 
+                      (<-[.]>)
                       # and all after, if any
-                      ['.' (.+)]?  
+                      ['.' (.+)]?
                       $/ {
             $num  = ~$0;
             $num ~= ~$1 if $1.defined;
@@ -167,3 +167,68 @@ sub create-base-set(
     }
     %h.Set;
 } # sub create-base-set
+
+sub from-dec-to-b37-b62(
+    $x'dec,
+    $base-o where ( 36 < $base-o < 63 ),
+    # optional args
+    :$length is copy, # for padding
+    :$prefix is copy,
+    :$suffix is copy,
+    :$LC is copy,
+    :$debug,
+    --> Str
+    ) is export(:from-dec-to-b37-b62) {
+
+    my UInt $len = $x'dec.chars;
+    $length = 0 if not $length.defined;
+    $prefix = 0 if not $prefix.defined;
+    $suffix = 0 if not $suffix.defined;
+    $LC     = 0 if not $LC.defined;
+
+    # see Wolfram's solution (article Base, see notes above)
+
+    # need ln_b x = ln x / ln b
+
+    # note Raku routine 'log' is math function 'ln' if no optional base
+    # arg is entered
+    my $log_b'x = log $x'dec / log $base-o;
+
+    # get place index of first digit
+    my $n = floor $log_b'x;
+
+    # now the algorithm
+    # we need @r below to be a fixed array of size $n + 2
+    my @r[$n + 2];
+    my @a[$n + 1];
+
+    @r[$n] = $x'dec;
+
+    # work through the $x'dec.chars places (positions, indices?)
+    # for now just handle integers (later, real, i.e., digits after a fraction
+    # point)
+    my @rev = (0..$n).reverse;
+    for @rev -> $i { # <= Wolfram text is misleading here
+	my $b'i  = $base-o ** $i;
+	@a[$i]   = floor (@r[$i] / $b'i);
+
+        say "  i = $i; a = '@a[$i]'; r = '@r[$i]'" if 0 or $debug;
+
+        # calc r for next iteration
+	@r[$i-1] = @r[$i] - @a[$i] * $b'i if $i > 0;
+    }
+
+    # @a contains the index of the digits of the number in the new base
+    my $x'b = '';
+    # digits are in the reversed order
+    for @a.reverse -> $di {
+        my $digit = @dec2digit[$di];
+        $x'b ~= $digit;
+    }
+
+    # trim leading zeroes
+    $x'b ~~ s/^ 0+ /0/;
+    $x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
+
+    $x'b;
+} # from-dec-to-b37-b62

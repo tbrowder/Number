@@ -10,11 +10,11 @@ for real numbers and >= 2 and <= 91 for integers.)
 
 (from Wolfram, see http://mathworld.wolfram.com/Base.html)
 
-The base b representation of a number x is 
+The base b representation of a number x is
 
  (a_n a_n-1 ... a_0 . a_-1 ...)_b
 
-(e.g, 123.456_10). 
+(e.g, 123.456_10).
 
 The index of the leading digit needed to represent the number x in
 base b is:
@@ -37,7 +37,7 @@ terminates in decimal notation) is the infinite expression 0.19999..._h.
 
 The base of a logarithm is a number b used to define the number system
 in which the logarithm is computed. In general, the logarithm of a
-number x in base b is written log_b x. The symbol log x is an 
+number x in base b is written log_b x. The symbol log x is an
 abbeviation regrettably used both for the common logarithm log_10 x
 (by engineers and physicists and indicated on pocket calcutators)
 and for the natural logarithn log_e x(by mathematicians).
@@ -45,7 +45,7 @@ ln x denotes the natural logarithm log_e x (as used by engineers and
 physicists and indicated on pocket calculators), and lg x denotes log_2 x.
 In this work, the notations log x = log_10 x and ln x = log_e x are
 used.
- 
+
 To convert between logarithms in different bases, the formula
 
   log_b x = ln x / ln b                                 (20)
@@ -54,45 +54,35 @@ can be used.
 
 =end comment
 
-sub from-dec-to-b37-b62(
-    $x'dec,
-    $base-o where ( 36 < $base-o < 63 ),
-    # optional args
-    :$length is copy, # for padding
-    :$prefix is copy,
-    :$suffix is copy,
-    :$LC is copy,
+# rewrite of sub 'from-dec-to-b37-b62' to cover all rebases
+# needs two subs
+sub w-frac-rebase(
+    :$frac-i is copy,
+    :$base-i where ( 2 <= $base-i <= 91 ),
+    :$base-o where ( 2 <= $base-o <= 91 ),
     :$debug,
-    --> Str
-    ) is export(:from-dec-to-b37-b62) {
+    ) is export(:w-frac-rebase) {
 
-    my UInt $len = $x'dec.chars;
-    $length = 0 if not $length.defined;
-    $prefix = 0 if not $prefix.defined;
-    $suffix = 0 if not $suffix.defined;
-    $LC     = 0 if not $LC.defined;
+    # The caller is sub w-rebase. Here we respect the case as
+    # is. Final length handling will be done in the caller, but here
+    # we nust have some limit on repeating digits (TBA).  We also can
+    # add proper rounding here or in the caller.  (Need rounding
+    # rules.)
 
+    =begin comment
     # see Wolfram's solution (article Base, see notes above)
-
     # need ln_b x = ln x / ln b
-
     # note Raku routine 'log' is math function 'ln' if no optional base
     # arg is entered
-    my $log_b'x = log $x'dec / log $base-o;
-
+    my $log_b'x = log $num-i.Numeric / log $base-o;
     # get place index of first digit
     my $n = floor $log_b'x;
-
     # now the algorithm
     # we need @r below to be a fixed array of size $n + 2
     my @r[$n + 2];
     my @a[$n + 1];
-
-    @r[$n] = $x'dec;
-
-    # work through the $x'dec.chars places (positions, indices?)
-    # for now just handle integers (later, real, i.e., digits after a fraction 
-    # point)
+    @r[$n] = $num-i;
+    # work through the $num-i.chars places (positions, indices?)
     my @rev = (0..$n).reverse;
     for @rev -> $i { # <= Wolfram text is misleading here
 	my $b'i  = $base-o ** $i;
@@ -103,37 +93,15 @@ sub from-dec-to-b37-b62(
         # calc r for next iteration
 	@r[$i-1] = @r[$i] - @a[$i] * $b'i if $i > 0;
     }
-
     # @a contains the index of the digits of the number in the new base
-    my $x'b = '';
+    my $num-o = '';
     # digits are in the reversed order
     for @a.reverse -> $di {
         my $digit = @dec2digit[$di];
-        $x'b ~= $digit;
+        $num-o ~= $digit;
     }
+    =end comment
 
-    # trim leading zeroes
-    $x'b ~~ s/^ 0+ /0/;
-    $x'b ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
-
-    $x'b;
-} # from-dec-to-b37-b62
-
-# rewrite of sub 'from-dec-to-b37-b62' to cover all rebases
-# needs two subs
-sub w-frac-rebase(
-    :$frac-i is copy, 
-    :$base-i where ( 2 <= $base-i <= 91 ),
-    :$base-o where ( 2 <= $base-o <= 91 ),
-    :$debug,
-    ) is export(:w-frac-rebase) {
-
-    # The caller is sub w-rebase. Here we respect the 
-    # case as is. Final length handling will be
-    # done in the caller, but here we nust have some
-    # limit on repeating digits (TBA).
-    # We also can add proper rounding here or in the caller.
-    # (Need rounding rules.)
 
 } # w-frac-rebase
 
@@ -169,7 +137,7 @@ sub w-rebase(
     my $frac-o;
     if $num-i.contains: $radix-point {
         ($num-i, $frac-i) = $num-i.split: $radix-point;
-        # illegal to have an ending radix-point 
+        # illegal to have an ending radix-point
         # a following digit
         unless $frac-i {
             die qq:to/HERE/;
@@ -185,30 +153,24 @@ sub w-rebase(
     # trim leading zeroes from the integral part
     $num-i ~~ s:i/^0+/0/;
 
-    # leading zero takes special handling 
+    # leading zero takes special handling
     if $num-i == 0 {
         # temporary "fix"
         return 0;
     }
 
     # see Wolfram's solution (article Base, see notes above)
-
     # need ln_b x = ln x / ln b
-
     # note Raku routine 'log' is math function 'ln' if no optional base
     # arg is entered
     my $log_b'x = log $num-i.Numeric / log $base-o;
-
     # get place index of first digit
     my $n = floor $log_b'x;
-
     # now the algorithm
     # we need @r below to be a fixed array of size $n + 2
     my @r[$n + 2];
     my @a[$n + 1];
-
     @r[$n] = $num-i;
-
     # work through the $num-i.chars places (positions, indices?)
     my @rev = (0..$n).reverse;
     for @rev -> $i { # <= Wolfram text is misleading here
@@ -220,7 +182,6 @@ sub w-rebase(
         # calc r for next iteration
 	@r[$i-1] = @r[$i] - @a[$i] * $b'i if $i > 0;
     }
-
     # @a contains the index of the digits of the number in the new base
     my $num-o = '';
     # digits are in the reversed order
