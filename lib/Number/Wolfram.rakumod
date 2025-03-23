@@ -12,7 +12,7 @@ for real numbers and >= 2 and <= 91 for integers.)
 
 The base b representation of a number x is 
 
- (a_n a_n-1 ... a_0.a_-1 ...)_b
+ (a_n a_n-1 ... a_0 . a_-1 ...)_b
 
 (e.g, 123.456_10). 
 
@@ -120,9 +120,25 @@ sub from-dec-to-b37-b62(
 } # from-dec-to-b37-b62
 
 # rewrite of sub 'from-dec-to-b37-b62' to cover all rebases
-#sub wolfram-rebase(
+# needs two subs
+sub w-frac-rebase(
+    :$frac-i is copy, 
+    :$base-i where ( 2 <= $base-i <= 91 ),
+    :$base-o where ( 2 <= $base-o <= 91 ),
+    :$debug,
+    ) is export(:w-frac-rebase) {
+
+    # The caller is sub w-rebase. Here we respect the 
+    # case as is. Final length handling will be
+    # done in the caller, but here we nust have some
+    # limit on repeating digits (TBA).
+    # We also can add proper rounding here or in the caller.
+    # (Need rounding rules.)
+
+} # w-frac-rebase
+
 sub w-rebase(
-    :$num-i is copy, # to handle fractions # $x'dec,
+    :$num-i is copy, # to handle fractions and leading signs
     :$base-i where ( 2 <= $base-i <= 91 ),
     :$base-o where ( 2 <= $base-o <= 91 ),
     # optional args
@@ -131,17 +147,16 @@ sub w-rebase(
     :$suffix is copy,
     :lc($LC) is copy,
     :$debug,
-    --> Str # $num-o
     ) is export(:w-rebase) {
 
-    my UInt $len = $num-i.chars; # includes any radix point # $x'dec.chars;
+    my UInt $len = $num-i.chars; # includes any radix point or sign
 
     $length = 0 if not $length.defined;
     $prefix = 0 if not $prefix.defined;
     $suffix = 0 if not $suffix.defined;
     $LC     = 0 if not $LC.defined;
 
-    # consider any sign
+    # consider any sign and keep it separate for now
     my $sign = "";
     if $num-i ~~ /^ (<[+-]>) (.+) / {
         $sign  = ~$0 if $0.defined;
@@ -150,9 +165,30 @@ sub w-rebase(
 
     # allow for fractional parts
     my $radix-point = '.';
-    my $frac = 0;
+    my $frac-i = 0;
+    my $frac-o;
     if $num-i.contains: $radix-point {
-        ($num-i, $frac) = $num-i.split: $radix-point;
+        ($num-i, $frac-i) = $num-i.split: $radix-point;
+        # illegal to have an ending radix-point 
+        # a following digit
+        unless $frac-i {
+            die qq:to/HERE/;
+            FATAL: Numbers must have at least one digit
+                   following a radix point.
+            HERE
+        }
+        # treat the fractional part separately
+        $frac-o = w-frac-rebase :$frac-i, :$base-i, :$base-o;
+    }
+
+    # $num-i is now the integral part
+    # trim leading zeroes from the integral part
+    $num-i ~~ s:i/^0+/0/;
+
+    # leading zero takes special handling 
+    if $num-i == 0 {
+        # temporary "fix"
+        return 0;
     }
 
     # see Wolfram's solution (article Base, see notes above)
@@ -197,10 +233,8 @@ sub w-rebase(
     $num-o ~~ s/^ 0+ /0/;
     $num-o ~~ s:i/^ 0 (<[0..9a..z]>) /$0/;
 
-    if $frac {
+    if $frac-o {
         # not so fast! take care of the fractional part
-        my $frac-o = '';
-
         # reassemble the number's parts
         $num-o ~= '.' ~ $frac-o;
     }
@@ -209,7 +243,6 @@ sub w-rebase(
         $num-o = $sign ~ $num-o;
     }
 
-    #$x'b;
-    '$num-o';
+    $num-o
 } # w-rebase
 # wolfram-rebase
