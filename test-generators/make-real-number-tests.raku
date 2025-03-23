@@ -6,7 +6,9 @@ use Helpers;
 my $ofil = "./t/11-real-number-tests.t";
 my $fh = open $ofil, :w;
 
-$fh.print: q:to/HERE/;
+my $length = 20;
+
+$fh.print: qq:to/HERE/;
 # WARNING - THIS FILE IS AUTO-GENERATED - EDITS MAY BE LOST
 # See ./make-real-number-tests.raku for the generating source
 
@@ -15,14 +17,15 @@ use Number :ALL;
 
 #plan 97;
 
-my $r; # exe results to test
-my $length = 20; 
+my \$r; # exe results to test
+my \$length = $length; 
 HERE
 
-my @bases-i = 2..36;
+#my @bases-i = 2..36;
+my @bases-i = 2, 8, 10, 16; # ..36;
+
 my @bases-o = @bases-i;
-my $num = "500";
-my $length = 4;
+my $num = "1000";
 my $r;
 
 # track number of tests

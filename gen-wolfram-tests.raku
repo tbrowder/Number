@@ -18,6 +18,7 @@ my $data  = 0;
 my $test  = 0;
 my $force = 0;
 my $int   = 0; # no real tests
+
 if not @*ARGS {
     print qq:to/HERE/;
     Usage: {$*PROGRAM} <mode> [int|debug|force]
