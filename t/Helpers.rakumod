@@ -1,6 +1,10 @@
 unit module Helpers;
 
-use Number::Vars :ALL;
+use Text::Utils :strip-comment;
+
+use Number :ALL;
+use Number::Wolfram :ALL;
+use Number::Subs :ALL;
 
 # we do NOT write any tests that are expected to fail (such as using :prefix
 # and :suffix at the same time
@@ -79,7 +83,7 @@ sub write-test-data-wolfram(
             $dec2 = $int2 ~ '.' ~ $frac2;
         } # end trim block
 
-    #   string.num   base    decimal-result
+        # string.num   base    decimal-result
       
         say "$set1  $base  $dec1";
         say "$set2  $base  $dec2";
@@ -103,11 +107,59 @@ sub write-test-data-wolfram(
 
 }
 
-
 sub write-test-wolfram(
-    # this writes tests for sub wolfram-rebase
+    :$dfil!, # the file with test data
+    :$ofil!, # the test file to be generated
+    :$int,   # use only int tests, no reals
 ) is export {
-}
+    # this writes tests for sub w-rebase
+    my $fh = open $ofil, :w;
+
+    $fh.print: qq:to/HERE/;
+    use Test;
+
+    use Number :ALL;
+    use Number::Wolfram :ALL;
+
+    my \$res;
+
+    HERE
+
+    my $sink;
+    my @lines = $dfil.IO.lines;
+    for @lines -> $line is copy {
+        $line = strip-comment $line;
+        next unless $line ~~ /\S/;
+
+        my @s = $line.words;
+        my $breal = "{@s.shift.lc}";
+        my $base  = @s.shift;
+        my $dreal = "{@s.shift.lc}";
+        if $int {
+            ($breal, $sink) = $breal.split: '.';
+            ($dreal, $sink) = $dreal.split: '.';
+        }
+
+
+        $fh.print: qq:to/HERE/;
+        \$res = w-rebase :num-i('$breal'), :base-i($base), :base-o(10);
+        is \$res.Numeric, '$dreal'.Numeric;
+
+        \$res = w-rebase :num-i('$dreal'), :base-i(10), :base-o($base);
+        is \$res.Numeric, '$breal'.Numeric;
+
+        HERE
+
+    } # end of loop
+
+    $fh.print: qq:to/HERE/;
+
+    done-testing;
+    HERE
+
+    $fh.close;
+
+} 
 
 sub write-test-rebase(
     # this writes tests for sub rebase

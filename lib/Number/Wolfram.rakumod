@@ -123,7 +123,6 @@ sub from-dec-to-b37-b62(
 #sub wolfram-rebase(
 sub w-rebase(
     :$num-i is copy, # to handle fractions # $x'dec,
-#   :$num-o,
     :$base-i where ( 2 <= $base-i <= 91 ),
     :$base-o where ( 2 <= $base-o <= 91 ),
     # optional args
@@ -151,10 +150,10 @@ sub w-rebase(
 
     # allow for fractional parts
     my $radix-point = '.';
-my $frac = 0;
-if $num-i.contains: $radix-point {
-    ($num-i, $frac) = $num-i.split: $radix-point;
-}
+    my $frac = 0;
+    if $num-i.contains: $radix-point {
+        ($num-i, $frac) = $num-i.split: $radix-point;
+    }
 
     # see Wolfram's solution (article Base, see notes above)
 
@@ -162,7 +161,7 @@ if $num-i.contains: $radix-point {
 
     # note Raku routine 'log' is math function 'ln' if no optional base
     # arg is entered
-    my $log_b'x = log $num-i / log $base-o;
+    my $log_b'x = log $num-i.Numeric / log $base-o;
 
     # get place index of first digit
     my $n = floor $log_b'x;
@@ -211,6 +210,6 @@ if $num-i.contains: $radix-point {
     }
 
     #$x'b;
-    $num-o;
+    '$num-o';
 } # w-rebase
 # wolfram-rebase
