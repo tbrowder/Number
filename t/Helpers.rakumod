@@ -6,27 +6,45 @@ use Number :ALL;
 use Number::Wolfram :ALL;
 use Number::Subs :ALL;
 
-# we do NOT write any tests that are expected to fail (such as using :prefix
+# We do NOT write any tests that are expected to fail (such as using :prefix
 # and :suffix at the same time
 
 # this sub writes test data for sub w-rebase
 sub write-test-data-wolfram(
-    :$trim = 0,
-    :$debug,
+     :$dfil!,
+Bool :$int!,
+     :$trim = 0,
+     :$debug,
 ) is export {
 
+    my $fh = open $dfil.IO.absolute, :w;
+    if $int {
+        $fh.print: qq:to/HERE/;
+        # base X int number | base X |  decimal int number equivalent (base 10)
+        #    (created by gen..raku)
+
+        HERE
+    }
+    else {
+        $fh.print: qq:to/HERE/;
+        # base X real number | base X |  decimal real number equivalent (base 10)
+        #    (created by gen..raku)
+
+        HERE
+    }
+
     # produces data lines in this format:
-    #   string.num   base    decimal-result
+    #   number number-base  decimal-equiv  (numbers may be int or real)
+    #   
     # plan
-    #   For bases 2..36 generate a set of M strings N chars long split by
-    #       a '.' (radix point), then a space, then the base number..
+    #   For bases 2..36 generate a set of M strings N chars long.
     #
     my $M  =  2; # one negative
-    my $N1 = 12; # left side of the radix point
-    my $N2 =  5; # right side of the radix point
+    my $N1 = 12; # integer
+    my $N2 =  5; # fraction
 
     for 2..36 -> $base {
-        # get the digit array
+        # get the digit array for the given base
         my @digits = @dec2digit[0..^$base];
         if 0 and $debug {
             say "chars for base $base:";
@@ -38,32 +56,30 @@ sub write-test-data-wolfram(
         # get two random sets of $N digits
         # example from librasteve:
         srand 5;
-        my @n1 = @digits.roll: $N1+1;
-        @n1.shift; # bad num
-        my $n1 = @n1.join("");
+        my @int = @digits.roll: $N1+1;
+        @int.shift; # bad num
+        my $int = @int.join;
 
-        my @n2 = @digits.roll: $N2+1;
-        my $n2 = @n2.join("");
-        my $set1 = ($n1 ~ '.' ~ $n2);
+        my $int1 = $int;
+        # negate
+        my $int2 = '-' ~ $int1;
 
-        say $set1 if 0 or $debug;
+        my @frac = @digits.roll: $N2+1;
+        my $frac = @frac.join;
+        my $real1 = $int ~ '.' ~ $frac;
+        my $real2 = '-' ~ $real1;
 
-        # get another two random sets of $N digits
-        # negate the second sets
-        my @n3 = @digits.roll: $N1+1;
-        my $n3 = @n3.join("");
-        $n3 = "-" ~ $n3;
+        say $real1 if 0 or $debug;
 
-        my @n4 = @digits.roll: $N2+1;
-        my $n4 = @n4.join("");
-        my $set2 = ($n3 ~ '.' ~ $n4);
-        say $set2 if 0 or $debug;
+        # create the actual test sets:
+        my $dec-int1 = parse-base $int1, $base;
+        my $dec-int2 = parse-base $int2, $base;
 
-        # create the actual test set:
-        my $dec1 = parse-base $set1, $base;
-        my $dec2 = parse-base $set2, $base;
+        my $dec-real1 = parse-base $real1, $base;
+        my $dec-real2 = parse-base $real2, $base;
 
         if $trim {
+            =begin comment
             # trim fraction to $trim chars max
             my ($int1, $frac1) = $dec1.split('.');
             my ($int2, $frac2) = $dec2.split('.');
@@ -81,12 +97,18 @@ sub write-test-data-wolfram(
             # reassemble
             $dec1 = $int1 ~ '.' ~ $frac1;
             $dec2 = $int2 ~ '.' ~ $frac2;
+            =end comment
         } # end trim block
 
         # string.num   base    decimal-result
-      
-        say "$set1  $base  $dec1";
-        say "$set2  $base  $dec2";
+        if $int {
+            $fh.say: "$int1  $base  $dec-int1";
+            $fh.say: "$int2  $base  $dec-int2";
+        }
+        else {
+            $fh.say: "$real1  $base  $dec-real1";
+            $fh.say: "$real2  $base  $dec-real2";
+        }
 
         =begin comment
         # the actual tests
@@ -104,13 +126,12 @@ sub write-test-data-wolfram(
         =end comment
 
     }
-
+    $fh.close;
 }
 
 sub write-test-wolfram(
-    :$dfil!, # the file with test data
-    :$ofil!, # the test file to be generated
-    :$int,   # use only int tests, no reals
+     :$dfil!, # the file with test data
+     :$ofil!, # the test file to be generated
 ) is export {
     # this writes tests for sub w-rebase
     my $fh = open $ofil, :w;
@@ -126,27 +147,25 @@ sub write-test-wolfram(
     HERE
 
     my $sink;
+    my ($base, $bnum, $dnum);
+
     my @lines = $dfil.IO.lines;
     for @lines -> $line is copy {
         $line = strip-comment $line;
         next unless $line ~~ /\S/;
 
         my @s = $line.words;
-        my $breal = "{@s.shift.lc}";
-        my $base  = @s.shift;
-        my $dreal = "{@s.shift.lc}";
-        if $int {
-            ($breal, $sink) = $breal.split: '.';
-            ($dreal, $sink) = $dreal.split: '.';
-        }
 
+        $bnum = "{@s.shift.lc}";
+        $base = @s.shift;
+        $dnum = "{@s.shift.lc}";
 
         $fh.print: qq:to/HERE/;
-        \$res = w-rebase :num-i('$breal'), :base-i($base), :base-o(10);
-        is \$res.Numeric, '$dreal'.Numeric;
+        \$res = w-rebase :num-i('$bnum'), :base-i($base), :base-o(10);
+        is \$res, '$dnum';
 
-        \$res = w-rebase :num-i('$dreal'), :base-i(10), :base-o($base);
-        is \$res.Numeric, '$breal'.Numeric;
+        \$res = w-rebase :num-i('$dnum'), :base-i(10), :base-o($base);
+        is \$res, '$bnum';
 
         HERE
 

@@ -1,8 +1,8 @@
-# base X real number | base X |  decimal real number equivalent (base 10)
+# base X int number | base X |  decimal int number equivalent (base 10)
 #    (created by gen..raku)
 
-011011010110  2  1750
--011011010110  2  -1750
+011010011111  2  1695
+-011010011111  2  -1695
 122022020211  3  340627
 -122022020211  3  -340627
 133022030321  4  8168249

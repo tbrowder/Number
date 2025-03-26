@@ -15,6 +15,7 @@
   "perl": "6.*",
   "provides": {
     "Number": "lib/Number.rakumod",
+    "Number::Knuth": "lib/Number/Knuth.rakumod",
     "Number::Subs": "lib/Number/Subs.rakumod",
     "Number::Vars": "lib/Number/Vars.rakumod",
     "Number::Wolfram": "lib/Number/Wolfram.rakumod"

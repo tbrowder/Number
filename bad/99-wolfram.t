@@ -15,6 +15,13 @@ my $debug = 0;
 
 my ($num-i, $num-o, $base-i, $base-o);
 
+$num-i = 0;
+$base-i = 10;
+$base-o = 2;
+$num-o = w-rebase :$num-i, :$base-i, :$base-o, :$debug;
+is $num-o, "0", "0 input, 0 output";
+say "DEBUG: num-o = $num-o" if $debug;
+
 $num-i = 3;
 $base-i = 10;
 $base-o = 2;
@@ -30,7 +37,7 @@ say "DEBUG: num-o = $num-o" if $debug;
 dies-ok {
     $num-i = '3.';
     $num-o = w-rebase :$num-i, :$base-i, :$base-o, :$debug;
-}, "FATAL: no digit after a radix point";
+}, "FATAL: should have one or more digits after a radix point";
 
 $num-i = 3.1;
 $num-o = w-rebase :$num-i, :$base-i, :$base-o, :$debug;

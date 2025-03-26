@@ -1,6 +1,6 @@
 unit module Number::Subs;
 
-use Number::Vars :ALL;
+use Number::Vars;
 
 sub parse-input(
     :$number,
@@ -83,7 +83,7 @@ sub parse-base2(
     $base is copy, #  where ( 2 <= $base <= 91 ),
     :$debug,
     --> Numeric:D
-) is export(:parse-base2) {
+) is export {
 
     # The input string may have embedded base modifiers in multiple
     # formats:
@@ -100,17 +100,29 @@ sub parse-base2(
         $num = $sign ~ $num;
     }
 
-    $dec = parse-base $num, 11;
+    $dec = parse-base $num, $base;
 
     =begin comment
     # leading modifiers
-    if $num ~~ /<[ \x[2080] .. \x[2089] / {
+    if $num ~~ /<[ \x[2080] .. \x[2089] ]> / {
     }
     elsif $num ~~ // {
     }
     =end comment
 
     $dec.Numeric;
+}
+
+sub valid-base-set(
+    $text,
+    :$base! where ( 2 <= $base <= 91 ),
+    --> Bool
+    ) is export {
+    # test that the input digits are in the desired base set
+    my $C = create-set $text;
+    my $B = create-base-set $base;
+    # the truth
+    $C (<=) $B
 }
 
 sub create-set(
@@ -128,7 +140,7 @@ sub create-set(
 } # sub create-set
 
 sub create-base-set(
-    UInt $base where ( 2 <= $base <= 91 ),
+    $base where ( 2 <= $base <= 91 ),
     :$debug,
     --> Set
     ) is export {

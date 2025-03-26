@@ -9,15 +9,18 @@ use Helpers;
 
 my $debug = 0;
 
-# the data file to be generated or used
-my $dfil = "t/data/real-number-rebase.dat";
-# the test file to be generated;
-my $ofil = "t/90-base2-base36-round-trip-tests.t";
+# Wolfram
+# the data files to be generated or used
+my $dfil1 = "t/data/int-number-rebase.dat";
+my $dfil2 = "t/data/real-number-rebase.dat";
+
+# the test files to be generated;
+my $ofil1 = "t/90-int-base2-36-round-trip.t";
+my $ofil2 = "t/90-real-base2-36-round-trip.t";
 
 my $data  = 0;
 my $test  = 0;
 my $force = 0;
-my $int   = 0; # no real tests
 
 if not @*ARGS {
     print qq:to/HERE/;
@@ -27,8 +30,8 @@ if not @*ARGS {
       and real numbers.
 
     Modes:
-      data - generate the data file
-      test - generate the test file
+      data - generate the data files
+      test - generate the test files
 
     HERE
     exit;
@@ -40,9 +43,6 @@ for @*ARGS {
     }
     when /^ f / {
         ++$force;
-    }
-    when /^ i / {
-        ++$int;
     }
     when /^ d / {
         ++$data;
@@ -57,59 +57,40 @@ for @*ARGS {
 }
 
 if $data {
-    if $dfil.IO.r {
-        if $force {
-            say "Over-writing test data file: $dfil";
+    FIL: for ($dfil1, $dfil2).kv -> $i, $f {
+        my $int = $i == 0 ?? True !! False;
+        if $f.IO.r {
+            if $force {
+                say "Over-writing test data file: $f";
+            }
+            else {
+                say "Test data file '$f' exists, use \$force to over-write";
+                next FIL;
+            }
         }
-        else {
-            say "Test data file '$dfil' exists, use \$force to over-write";
-            say "Exiting...";
-        }
+        # call the sub
+        write-test-data-wolfram :dfil($f), :$int, :$debug;
     }
-
-    write-test-data-wolfram :$int, :$debug;
 }
 
 if $test {
-    if $ofil.IO.r {
-        if $force {
-            say "Over-writing test file: $ofil";
+    FIL: for ($ofil1, $ofil2).kv -> $i, $f {
+        my $df  = $i == 0 ?? $dfil1 !! $dfil2;
+        my $int = $i == 0 ?? True !! False;
+        if $f.IO.r {
+            if $force {
+                say "Over-writing test file: $f";
+            }
+            else {
+                say "Test file '$f' exists, use \$force to over-write";
+                next FIL;
+            }
         }
-        else {
-            say "Test file '$ofil' exists, use \$force to over-write";
-            say "Exiting...";
-        }
+        # call the sub
+        # sub write-test-wolfram(
+        # :$dfil!, # the file with test data
+        # :$ofil!, # the test file to be generated
+        write-test-wolfram :dfil($df), :ofil($f);
+        say "See output test file: '$f'";
     }
-
-    # call the sub
-    # sub write-test-wolfram(
-    # :$dfil!, # the file with test data
-    # :$ofil!, # the test file to be generated
-    write-test-wolfram :$dfil, :$ofil, :$int;
-
-    =begin comment
-    my $fh = open $ofil.IO.absolute, :w;
-    $fh.print: q:to/HERE/;
-    # WARNING - THIS FILE IS AUTO-GENERATED - EDITS MAY BE LOST
-    # See ./gen-all-base-tests.raku for the generating source
-
-    use Test;
-    use Number :ALL;
-    use Number::Subs :ALL;
-    use Number::Wolfram :ALL;
-
-    #plan 97;
-
-    my $r; # exe results to test
-    my $length = 4;
-
-    # temp ending
-    is 1, 1;
-
-    done-testing;
-    HERE
-    $fh.close;
-    =end comment
-
-    say "See output test file: '$ofil'";
 }
