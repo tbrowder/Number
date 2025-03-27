@@ -126,8 +126,23 @@ sub knuth-rebase(
 
 #====================================
 sub m1a( # Knuth, Method 1a, p. 319
+    $num-i,
+    :$base-i where ( 2 <= $base-i <= 91 ),
+    :$base-p where ( 2 <= $base-i <= 91 ),
+    :$debug,
 ) is export {
     # Division by B using radix-b arithmetic
+    =begin comment
+    Given an integer u, we can obtain its radix-B repr
+    (U2U1U0 as follows:
+    U0 = u mod B, U1 = floor (u/B) mod B, U2 = floor ( floor (u/B )/B) mod B...
+    ... stopping when last char gives 0 
+
+    Note u 
+    =end comment
+    my @u = $num-i.comb;
+    for @u -> $
+
 } # m1a
 
 sub m1b( # Knuth, Method 1b, p. 319

@@ -1,0 +1,9 @@
+Unfortunately, to handle all bases from 2 to 91, we have to use the
+method of "mixed bases" (A .. B) shown as the answer to Exercise 10 of
+Section 4.1 on page 605.
+
+The problem is that set A conversions are for bases which are powers
+of base 2. That method is shown as Equation (5) on page 204. Set B
+conversions are for bases NOT in set A.
+
+Set (A .. B) conversions are
