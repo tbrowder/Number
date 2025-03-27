@@ -130,7 +130,7 @@ sub w-rebase(
 
     # get the indices for the incoming char set
     my @ci = IntegerDigits $num-i, :base($base-i);
-    if 1 or $debug {
+    if 0 or $debug {
         note "DEBUG: \@ci:";
         note " '$_'" for @ci;
         note();
@@ -160,7 +160,7 @@ sub w-rebase(
     for @i -> $i { # <= Wolfram text is confusing here
         note "DEBUG:  i = '$i'" if 1 or $debug;
 	my $bi = $base-o ** $i;
-        @r[$i] = @r[$i+1] - @a[$i+1] * $base-o ** $i+1;
+        @r[$i] = @r[$i+1] + @a[$i+1] * $base-o ** $i+1;
 	@a[$i] = floor (@r[$i] / $bi);
 
         note "DEBUG:  i = $i; a = '@a[$i]'; r = '@r[$i]'" if 1 or $debug;

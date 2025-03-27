@@ -123,3 +123,25 @@ sub knuth-rebase(
 
     $num-o
 } # knuth-rebase
+
+#====================================
+sub m1a( # Knuth, Method 1a, p. 319
+) is export {
+    # Division by B using radix-b arithmetic
+} # m1a
+
+sub m1b( # Knuth, Method 1b, p. 319
+) is export {
+    # Multiplication by b using radix-B arithmetic
+} # m1b
+
+sub m2a( # Knuth, Method 2a, p. 319
+) is export {
+    # Multiplication by B using radix-B arithmetic
+} # m2a
+
+sub m2b( # Knuth, Method 2b, p. 320
+) is export {
+    # Division by b using radix-B arithmetic
+} # m2b
+

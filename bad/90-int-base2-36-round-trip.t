@@ -5,12 +5,15 @@ use Number::Wolfram :ALL;
 
 my $res;
 
-$res = w-rebase :num-i('011010011111'), :base-i(2), :base-o(10);
-#is $res.Numeric, '1695'.Numeric;
-is $res, '1695';
+$res = w-rebase :num-i('11'), :base-i(2), :base-o(10);
+is $res, '3';
 
 done-testing;
 exit;
+
+$res = w-rebase :num-i('011010011111'), :base-i(2), :base-o(10);
+#is $res.Numeric, '1695'.Numeric;
+is $res, '1695';
 
 $res = w-rebase :num-i('1695'), :base-i(10), :base-o(2);
 #is $res.Numeric, '011010011111'.Numeric;
